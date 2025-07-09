@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { Message } from "../ipc_types";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import fs from "node:fs";
 
 export const execPromise = promisify(exec);
 
@@ -17,14 +18,21 @@ export async function executeAddDependency({
   appPath: string;
 }) {
   const packageStr = packages.join(" ");
+  const packageJsonPath = `${appPath}/package.json`;
+  let installResults = "";
 
-  const { stdout, stderr } = await execPromise(
-    `(pnpm add ${packageStr}) || (npm install --legacy-peer-deps ${packageStr})`,
-    {
-      cwd: appPath,
-    },
-  );
-  const installResults = stdout + (stderr ? `\n${stderr}` : "");
+  if (fs.existsSync(packageJsonPath)) {
+    const { stdout, stderr } = await execPromise(
+      `(pnpm add ${packageStr}) || (npm install --legacy-peer-deps ${packageStr})`,
+      {
+        cwd: appPath,
+      },
+    );
+    installResults = stdout + (stderr ? `\n${stderr}` : "");
+  } else {
+    installResults =
+      "[skipped] No package.json found in this project. Dependency installation is only supported for Node.js projects.";
+  }
 
   // Update the message content with the installation results
   const updatedContent = message.content.replace(

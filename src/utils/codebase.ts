@@ -37,7 +37,19 @@ const ALLOWED_EXTENSIONS = [
   ".xml",
   ".plist",
   ".entitlements",
-  ".kt",
+  // Added for new templates
+  ".php", // PHP
+  ".py", // Python (Flask)
+  ".cs", // C#
+  ".go", // Go
+  ".rb", // Ruby
+  ".rs", // Rust
+  ".json", // JSON config, Expo, etc.
+  ".sql", // SQL migrations
+  ".sh", // Shell scripts
+  ".dockerfile", // Dockerfile lowercase
+  ".Dockerfile", // Dockerfile capitalized
+  ".kt", // Kotlin
   ".java",
   ".gradle",
   ".swift",
