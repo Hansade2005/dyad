@@ -1,12 +1,12 @@
 {
-  "name": "dyad",
-  "productName": "dyad",
+  "name": "trio",
+  "productName": "trio",
   "version": "0.12.0-beta.2",
-  "description": "My Electron application description",
+  "description": "Your app idea, realized. Simply describe what you need, and this AI software engineer builds a complete, fully functional application for you from that single prompt. No code, just creation.",
   "main": ".vite/build/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dyad-sh/dyad.git"
+    "url": "https://github.com/Hansade2005/dyad.git"
   },
   "engines": {
     "node": ">=20"
