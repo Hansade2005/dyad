@@ -18,7 +18,7 @@ import { promises as fsPromises } from "node:fs";
 
 // Import our utility modules
 import { withLock } from "../utils/lock_utils";
-import { getFilesRecursively } from "../utils/file_utils";
+const { getFilesRecursively } = require("../utils/file_utils");
 import {
   runningApps,
   processCounter,

@@ -6,11 +6,11 @@ if (typeof process === "undefined" || !process.versions?.node) {
   );
 }
 
-import fs from "node:fs";
-import { promises as fsPromises } from "node:fs";
-import path from "node:path";
-import fsExtra from "fs-extra";
-import { generateCuteAppName } from "../../lib/utils";
+const fs = require("node:fs");
+const fsPromises = fs.promises;
+const path = require("node:path");
+const fsExtra = require("fs-extra");
+const { generateCuteAppName } = require("../../lib/utils");
 
 // Directories to exclude when scanning files
 const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
@@ -21,13 +21,13 @@ const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
  * @param baseDir The base directory for calculating relative paths
  * @returns Array of file paths relative to the base directory
  */
-export function getFilesRecursively(dir: string, baseDir: string): string[] {
+function getFilesRecursively(dir: string, baseDir: string): string[] {
   if (!fs.existsSync(dir)) {
     return [];
   }
 
   const dirents = fs.readdirSync(dir, { withFileTypes: true });
-  const files: string[] = [];
+  const files = [];
 
   for (const dirent of dirents) {
     const res = path.join(dir, dirent.name);
@@ -45,11 +45,12 @@ export function getFilesRecursively(dir: string, baseDir: string): string[] {
 
   return files;
 }
+module.exports.getFilesRecursively = getFilesRecursively;
 
-export async function copyDirectoryRecursive(
+async function copyDirectoryRecursive(
   source: string,
   destination: string,
-) {
+): Promise<void> {
   await fsPromises.mkdir(destination, { recursive: true });
   const entries = await fsPromises.readdir(source, { withFileTypes: true });
   // Why do we sort? This ensures stable ordering of files across platforms
@@ -70,8 +71,9 @@ export async function copyDirectoryRecursive(
     }
   }
 }
+module.exports.copyDirectoryRecursive = copyDirectoryRecursive;
 
-export async function writeMigrationFile(
+async function writeMigrationFile(
   appPath: string,
   queryContent: string,
   queryDescription?: string,
@@ -81,11 +83,11 @@ export async function writeMigrationFile(
 
   const files = await fsExtra.readdir(migrationsDir);
   const migrationNumbers = files
-    .map((file) => {
+    .map((file: string) => {
       const match = file.match(/^(\d{4})_/);
       return match ? parseInt(match[1], 10) : -1;
     })
-    .filter((num) => num !== -1);
+    .filter((num: number) => num !== -1);
 
   const nextMigrationNumber =
     migrationNumbers.length > 0 ? Math.max(...migrationNumbers) + 1 : 0;
@@ -104,11 +106,12 @@ export async function writeMigrationFile(
   await fsExtra.writeFile(migrationFilePath, queryContent);
   return path.relative(appPath, migrationFilePath);
 }
+module.exports.writeMigrationFile = writeMigrationFile;
 
 /**
  * Write a Neon SQL migration file (mirrors Supabase migration workflow)
  */
-export async function writeNeonMigrationFile(
+async function writeNeonMigrationFile(
   appPath: string,
   queryContent: string,
   queryDescription?: string,
@@ -118,11 +121,11 @@ export async function writeNeonMigrationFile(
 
   const files = await fsExtra.readdir(migrationsDir);
   const migrationNumbers = files
-    .map((file) => {
+    .map((file: string) => {
       const match = file.match(/^(\d{4})_/);
       return match ? parseInt(match[1], 10) : -1;
     })
-    .filter((num) => num !== -1);
+    .filter((num: number) => num !== -1);
 
   const nextMigrationNumber =
     migrationNumbers.length > 0 ? Math.max(...migrationNumbers) + 1 : 0;
@@ -141,10 +144,12 @@ export async function writeNeonMigrationFile(
   await fsExtra.writeFile(migrationFilePath, queryContent);
   return path.relative(appPath, migrationFilePath);
 }
+module.exports.writeNeonMigrationFile = writeNeonMigrationFile;
 
-export async function fileExists(filePath: string) {
+async function fileExists(filePath: string): Promise<boolean> {
   return fsPromises
     .access(filePath)
     .then(() => true)
     .catch(() => false);
 }
+module.exports.fileExists = fileExists;
