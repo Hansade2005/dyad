@@ -717,6 +717,121 @@ export class IpcClient {
 
   // --- End Supabase Management ---
 
+  // --- Vercel Management ---
+  public async listVercelProjects(teamId?: string): Promise<any[]> {
+    return this.ipcRenderer.invoke(
+      "vercel:list-projects",
+      teamId ? { teamId } : {},
+    );
+  }
+
+  public async setVercelAppProject(
+    projectId: string,
+    appId: number,
+  ): Promise<void> {
+    await this.ipcRenderer.invoke("vercel:set-app-project", {
+      projectId,
+      appId,
+    });
+  }
+
+  public async unsetVercelAppProject(appId: number): Promise<void> {
+    await this.ipcRenderer.invoke("vercel:unset-app-project", { appId });
+  }
+
+  public async deployVercelProject(
+    projectId: string,
+    teamId?: string,
+    payload?: any,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:deploy-project", {
+      projectId,
+      teamId,
+      payload,
+    });
+  }
+
+  public async getVercelDeploymentStatus(
+    deploymentId: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:get-deployment-status", {
+      deploymentId,
+      teamId,
+    });
+  }
+
+  public async getVercelDeploymentLogs(
+    deploymentId: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:get-deployment-logs", {
+      deploymentId,
+      teamId,
+    });
+  }
+
+  public async listVercelEnvs(
+    projectId: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:list-envs", { projectId, teamId });
+  }
+  public async addVercelEnv(
+    projectId: string,
+    env: any,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:add-env", {
+      projectId,
+      env,
+      teamId,
+    });
+  }
+  public async deleteVercelEnv(
+    projectId: string,
+    envId: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:delete-env", {
+      projectId,
+      envId,
+      teamId,
+    });
+  }
+  public async listVercelDomains(
+    projectId: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:list-domains", {
+      projectId,
+      teamId,
+    });
+  }
+  public async addVercelDomain(
+    projectId: string,
+    domain: any,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:add-domain", {
+      projectId,
+      domain,
+      teamId,
+    });
+  }
+  public async removeVercelDomain(
+    projectId: string,
+    domain: string,
+    teamId?: string,
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("vercel:remove-domain", {
+      projectId,
+      domain,
+      teamId,
+    });
+  }
+  // --- End Vercel Management ---
+
   public async getSystemDebugInfo(): Promise<SystemDebugInfo> {
     return this.ipcRenderer.invoke("get-system-debug-info");
   }
