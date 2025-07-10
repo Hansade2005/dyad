@@ -18,7 +18,7 @@ import { promises as fsPromises } from "node:fs";
 
 // Import our utility modules
 import { withLock } from "../utils/lock_utils";
-import { getFilesRecursively, EXCLUDED_DIRS } from "../utils/file_utils";
+import { getFilesRecursively } from "../utils/file_utils";
 import {
   runningApps,
   processCounter,
@@ -46,6 +46,9 @@ import { gitCommit } from "../utils/git_utils";
 import { safeSend } from "../utils/safe_sender";
 import { normalizePath } from "../../../shared/normalizePath";
 import { isServerFunction } from "@/supabase_admin/supabase_utils";
+
+// Define EXCLUDED_DIRS locally to avoid importing from file_utils (Node.js-only)
+const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
 
 async function copyDir(
   source: string,
