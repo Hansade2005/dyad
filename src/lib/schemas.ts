@@ -163,6 +163,14 @@ export const UserSettingsSchema = z.object({
   enableAutoUpdate: z.boolean(),
   releaseChannel: ReleaseChannelSchema,
 
+  // Websearch config for Google CSE
+  websearch: z
+    .object({
+      googleCseCx: z.string().optional(),
+      googleCseApiKey: z.string().optional(),
+    })
+    .optional(),
+
   ////////////////////////////////
   // E2E TESTING ONLY.
   ////////////////////////////////

@@ -1,6 +1,6 @@
-import { SendIcon, StopCircleIcon, Paperclip } from "lucide-react";
+import { SendIcon, StopCircleIcon, Globe, Paperclip } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useSettings } from "@/hooks/useSettings";
 import { homeChatInputValueAtom } from "@/atoms/chatAtoms"; // Use a different atom for home input
@@ -24,6 +24,7 @@ export function HomeChatInput({
   const { isStreaming } = useStreamChat({
     hasChatId: false,
   }); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [websearchActive, setWebsearchActive] = useState(false);
 
   // Use the attachments hook
   const {
@@ -65,9 +66,14 @@ export function HomeChatInput({
     if ((!inputValue.trim() && attachments.length === 0) || isStreaming) {
       return;
     }
-
-    // Call the parent's onSubmit handler with attachments
-    onSubmit({ attachments });
+    let finalInput = inputValue;
+    if (websearchActive) {
+      finalInput =
+        "[Websearch is available. Use /websearch <query> to fetch real-time data.]\n" +
+        inputValue;
+    }
+    // Call the parent's onSubmit handler with attachments and modified input
+    onSubmit({ attachments, inputValue: finalInput });
 
     // Clear attachments as part of submission process
     clearAttachments();
@@ -110,7 +116,19 @@ export function HomeChatInput({
               style={{ resize: "none" }}
               disabled={isStreaming}
             />
-
+            {/* Globe icon for websearch */}
+            <button
+              type="button"
+              className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none mr-1 ${websearchActive ? "bg-blue-100 dark:bg-blue-900" : ""}`}
+              title="Websearch"
+              aria-label="Websearch"
+              tabIndex={0}
+              onClick={() => setWebsearchActive((v) => !v)}
+            >
+              <Globe
+                className={`w-5 h-5 ${websearchActive ? "text-blue-600" : "text-gray-500"}`}
+              />
+            </button>
             {/* File attachment button */}
             <button
               onClick={handleAttachmentClick}

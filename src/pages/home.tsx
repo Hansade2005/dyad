@@ -32,6 +32,7 @@ import { useQueryClient } from "@tanstack/react-query";
 // Adding an export for attachments
 export interface HomeSubmitOptions {
   attachments?: File[];
+  inputValue?: string; // Allow passing a custom input value (for websearch signal)
 }
 
 export default function HomePage() {

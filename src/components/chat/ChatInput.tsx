@@ -145,6 +145,8 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     }
   };
 
+  const [websearchActive, setWebsearchActive] = useState(false);
+
   const handleSubmit = async () => {
     if (
       (!inputValue.trim() && attachments.length === 0) ||
@@ -153,14 +155,18 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     ) {
       return;
     }
-
-    const currentInput = inputValue;
+    let finalInput = inputValue;
+    if (websearchActive) {
+      finalInput =
+        "[Websearch is available. Use /websearch <query> to fetch real-time data.]\n" +
+        inputValue;
+    }
     setInputValue("");
     setSelectedComponent(null);
 
     // Send message with attachments and clear them after sending
     await streamMessage({
-      prompt: currentInput,
+      prompt: finalInput,
       chatId,
       attachments,
       redo: false,
@@ -341,7 +347,11 @@ export function ChatInput({ chatId }: { chatId?: number }) {
           </div>
           <div className="pl-2 pr-1 flex items-center justify-between pb-2">
             <div className="flex items-center">
-              <ChatInputControls showContextFilesPicker={true} />
+              <ChatInputControls
+                showContextFilesPicker={true}
+                websearchActive={websearchActive}
+                onWebsearchToggle={setWebsearchActive}
+              />
               {/* File attachment button */}
               <TooltipProvider>
                 <Tooltip>
