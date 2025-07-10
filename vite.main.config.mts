@@ -10,13 +10,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: [
-        "better-sqlite3",
-        "node:fs",
-        "node:fs/promises",
-        "fs-extra",
-        "node:path",
-      ],
+      external: ["better-sqlite3"],
       output: {
         sourcemap: true,
       },
