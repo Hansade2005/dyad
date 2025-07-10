@@ -82,7 +82,7 @@ export function HomeChatInput({
     <>
       <div className="p-4" data-testid="home-chat-input-container">
         <div
-          className={`relative flex flex-col space-y-2 border border-border rounded-lg bg-(--background-lighter) shadow-sm ${
+          className={`relative flex flex-col space-y-2 border border-border rounded-2xl bg-white/60 dark:bg-gray-900/60 shadow-lg backdrop-blur-md transition-all duration-200 ${
             isDraggingOver ? "ring-2 ring-blue-500 border-blue-500" : ""
           }`}
           onDragOver={handleDragOver}
@@ -98,7 +98,7 @@ export function HomeChatInput({
           {/* Drag and drop overlay */}
           <DragDropOverlay isDraggingOver={isDraggingOver} />
 
-          <div className="flex items-start space-x-2 ">
+          <div className="flex items-start gap-3 px-3 pt-2">
             <textarea
               ref={textareaRef}
               value={inputValue}
@@ -106,15 +106,15 @@ export function HomeChatInput({
               onKeyPress={handleKeyPress}
               onPaste={handlePaste}
               placeholder="Ask Trio to build..."
-              className="flex-1 p-2 focus:outline-none overflow-y-auto min-h-[40px] max-h-[200px]"
+              className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-inner min-h-[44px] max-h-[200px] text-base transition-all duration-200 resize-none"
               style={{ resize: "none" }}
-              disabled={isStreaming} // Should ideally reflect if *any* stream is happening
+              disabled={isStreaming}
             />
 
             {/* File attachment button */}
             <button
               onClick={handleAttachmentClick}
-              className="px-2 py-2 mt-1 mr-1 hover:bg-(--background-darkest) text-(--sidebar-accent-fg) rounded-lg disabled:opacity-50"
+              className="flex items-center justify-center w-10 h-10 mt-1 mr-1 rounded-full bg-white/70 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 shadow hover:bg-primary/10 transition disabled:opacity-50"
               disabled={isStreaming}
               title="Attach files"
             >
@@ -131,7 +131,7 @@ export function HomeChatInput({
 
             {isStreaming ? (
               <button
-                className="px-2 py-2 mt-1 mr-2 text-(--sidebar-accent-fg) rounded-lg opacity-50 cursor-not-allowed" // Indicate disabled state
+                className="flex items-center justify-center w-10 h-10 mt-1 mr-2 rounded-full bg-gray-200 dark:bg-gray-800 text-(--sidebar-accent-fg) opacity-50 cursor-not-allowed"
                 title="Cancel generation (unavailable here)"
               >
                 <StopCircleIcon size={20} />
@@ -140,7 +140,7 @@ export function HomeChatInput({
               <button
                 onClick={handleCustomSubmit}
                 disabled={!inputValue.trim() && attachments.length === 0}
-                className="px-2 py-2 mt-1 mr-2 hover:bg-(--background-darkest) text-(--sidebar-accent-fg) rounded-lg disabled:opacity-50"
+                className="flex items-center justify-center w-10 h-10 mt-1 mr-2 rounded-full bg-primary/90 text-white shadow hover:bg-primary transition disabled:opacity-50"
                 title="Send message"
               >
                 <SendIcon size={20} />

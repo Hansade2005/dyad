@@ -176,24 +176,18 @@ export default function HomePage() {
         <HomeChatInput onSubmit={handleSubmit} />
 
         <div className="flex flex-col gap-4 mt-4">
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 justify-center">
             {randomPrompts.map((item, index) => (
               <button
                 type="button"
                 key={index}
                 onClick={() => setInputValue(`Build me a ${item.label}`)}
-                className="flex items-center gap-3 px-4 py-2 rounded-xl border border-gray-200
-                           bg-white/50 backdrop-blur-sm
-                           transition-all duration-200
-                           hover:bg-white hover:shadow-md hover:border-gray-300
-                           active:scale-[0.98]
-                           dark:bg-gray-800/50 dark:border-gray-700
-                           dark:hover:bg-gray-800 dark:hover:border-gray-600"
+                className="flex flex-col items-center justify-center gap-2 px-5 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 shadow-md hover:bg-primary/10 hover:shadow-lg transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[80px]"
               >
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-2xl text-gray-700 dark:text-gray-300">
                   {item.icon}
                 </span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-base font-semibold text-gray-700 dark:text-gray-200 text-center">
                   {item.label}
                 </span>
               </button>
