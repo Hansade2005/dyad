@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { AutoFixProblemsSwitch } from "@/components/AutoFixProblemsSwitch";
 import { AutoUpdateSwitch } from "@/components/AutoUpdateSwitch";
 import { ReleaseChannelSelector } from "@/components/ReleaseChannelSelector";
+import { Copy } from "lucide-react";
 
 export default function SettingsPage() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -67,6 +68,7 @@ export default function SettingsPage() {
           <GeneralSettings appVersion={appVersion} />
           <WorkflowSettings />
           <AISettings />
+          <ContactSection />
 
           <div
             id="provider-settings"
@@ -303,6 +305,118 @@ export function AISettings() {
 
       <div className="mt-4">
         <MaxChatTurnsSelector />
+      </div>
+    </div>
+  );
+}
+
+function ContactSection() {
+  const [copied, setCopied] = useState<string | null>(null);
+  // Calculate age from DOB 22th Feb 2005 (internal only)
+  const dob = new Date(2005, 1, 22); // Month is 0-indexed
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  const contactDetails = [
+    {
+      label: "Phone",
+      value: "+237679719353",
+    },
+    {
+      label: "Support Email",
+      value: "support@tweetchat.me",
+    },
+    {
+      label: "Personal Email",
+      value: "hanscadx8@gmail.com",
+    },
+    {
+      label: "Address",
+      value: "Bonaberi, Douala Cameroon",
+    },
+  ];
+
+  const handleCopy = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(value);
+      setTimeout(() => setCopied(null), 1200);
+    } catch {
+      setCopied(null);
+    }
+  };
+
+  return (
+    <div
+      id="contact-section"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6"
+    >
+      <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        Developer's Contact
+      </h2>
+      <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+        <div>
+          <span className="font-semibold">Name:</span> Hans Ade
+        </div>
+        <div>
+          <span className="font-semibold">Official Name:</span> Anye Happiness
+          Ade
+        </div>
+        <div>
+          <span className="font-semibold">Title:</span> CEO of Trio Agent
+        </div>
+        <div>
+          <span className="font-semibold">Profession:</span> Software Engineer
+        </div>
+        <div>
+          <span className="font-semibold">Education:</span> BTech in Software
+          Engineering
+        </div>
+        <div>
+          <span className="font-semibold">Experience:</span> 5 Years in Field
+        </div>
+        <div>
+          <span className="font-semibold">Age:</span> {age} years
+        </div>
+        <div>
+          <span className="font-semibold">Skills:</span> Fullstack Developer,
+          Next.js, Express.js, React.js, Angular.js, Vue.js, PHP, Python, C &
+          C++, Wordpress, Drupal, Joomla, Wix, AI & Machine Learning, Model
+          Training & Deployment (Python), Docker
+        </div>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {contactDetails.map((item) => (
+            <div key={item.label} className="flex items-center gap-2">
+              <span className="font-semibold">{item.label}:</span>
+              <span className="font-mono select-all break-all">
+                {item.value}
+              </span>
+              <button
+                onClick={() => handleCopy(item.value)}
+                className="ml-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                aria-label={`Copy ${item.label}`}
+                type="button"
+              >
+                <Copy className="h-4 w-4 text-gray-500" />
+              </button>
+              {copied === item.value && (
+                <span className="text-green-600 text-xs ml-1">Copied!</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-8">
+          <a
+            href="mailto:hanscadx8@gmail.com?subject=Hire%20Request%20from%20Dyad%20App"
+            className="inline-block rounded-full bg-primary text-primary-foreground px-8 py-3 text-lg font-semibold shadow-lg hover:bg-primary/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+            style={{ minWidth: 180 }}
+          >
+            Hire Me
+          </a>
+        </div>
       </div>
     </div>
   );

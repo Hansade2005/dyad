@@ -31,10 +31,11 @@ const HubPage: React.FC = () => {
         </Button>
         <header className="mb-8 text-left">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Pick your default template
+            Pick a default template for your new projects
           </h1>
           <p className="text-md text-gray-600 dark:text-gray-400">
-            Choose a starting point for your new project.
+            Choose a starting point for your new project and let Trio Agent
+            handle it all for you.
           </p>
         </header>
 
