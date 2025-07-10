@@ -1,3 +1,11 @@
+// IMPORTANT: This file is Node.js/Electron-only and must never be imported in renderer or preload code.
+// If imported in a browser context, throw an error immediately.
+if (typeof process === "undefined" || !process.versions?.node) {
+  throw new Error(
+    "src/ipc/utils/file_utils.ts must only be used in Node.js/Electron main process.",
+  );
+}
+
 import fs from "node:fs";
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
