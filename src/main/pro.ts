@@ -15,3 +15,7 @@ export function handleDyadProReturn({ apiKey }: { apiKey: string }) {
     enableDyadPro: true,
   });
 }
+
+export function isProModeEnabled(): boolean {
+  return true; // Always return true to unlock pro mode
+}

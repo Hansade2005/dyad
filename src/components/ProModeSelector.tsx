@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Sparkles, Info } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { IpcClient } from "@/ipc/ipc_client";
-import { hasDyadProKey } from "@/lib/schemas";
+import { isProModeEnabled } from "../main/pro";
 
 export function ProModeSelector() {
   const { settings, updateSettings } = useSettings();
@@ -37,8 +37,7 @@ export function ProModeSelector() {
     });
   };
 
-  const hasProKey = settings ? hasDyadProKey(settings) : false;
-  const proModeTogglable = hasProKey && Boolean(settings?.enableDyadPro);
+  const isProUnlocked = isProModeEnabled();
 
   return (
     <Popover>
@@ -66,7 +65,7 @@ export function ProModeSelector() {
             </h4>
             <div className="h-px bg-gradient-to-r from-primary/50 via-primary/20 to-transparent" />
           </div>
-          {!hasProKey && (
+          {!isProUnlocked && (
             <div className="text-sm text-center text-muted-foreground">
               <a
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary shadow-sm transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -86,8 +85,8 @@ export function ProModeSelector() {
               label="Enable Dyad Pro"
               description="Use Dyad Pro AI credits"
               tooltip="Uses Dyad Pro AI credits for the main AI model and Pro modes."
-              isTogglable={hasProKey}
-              settingEnabled={Boolean(settings?.enableDyadPro)}
+              isTogglable={isProUnlocked}
+              settingEnabled={isProUnlocked} // Always enabled if unlocked
               toggle={toggleProEnabled}
             />
             <SelectorRow
@@ -95,7 +94,7 @@ export function ProModeSelector() {
               label="Turbo Edits"
               description="Makes file edits faster and cheaper"
               tooltip="Uses a faster, cheaper model to generate full file updates."
-              isTogglable={proModeTogglable}
+              isTogglable={isProUnlocked}
               settingEnabled={Boolean(settings?.enableProLazyEditsMode)}
               toggle={toggleLazyEdits}
             />
@@ -104,7 +103,7 @@ export function ProModeSelector() {
               label="Smart Context"
               description="Optimizes your AI's code context"
               tooltip="Improve efficiency and save credits working on large codebases."
-              isTogglable={proModeTogglable}
+              isTogglable={isProUnlocked}
               settingEnabled={Boolean(settings?.enableProSmartFilesContextMode)}
               toggle={toggleSmartContext}
             />
