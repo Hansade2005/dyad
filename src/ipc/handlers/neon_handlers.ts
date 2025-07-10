@@ -49,11 +49,22 @@ ipcMain.handle("neon:list-projects", async () => {
   return Object.values(neonProjects);
 });
 
-ipcMain.handle("neon:run-sql", async (_event, { projectId, query }) => {
-  const apiKey = getNeonApiKey();
-  if (!apiKey) throw new Error("Neon API key not set");
-  neonToolkit = new NeonToolkit(apiKey);
-  const project = neonProjects[projectId];
-  if (!project) throw new Error("Project not found");
-  return neonToolkit.sql(project, query);
-});
+ipcMain.handle(
+  "neon:run-sql",
+  async (_event, { projectId, query, writeMigration, description }) => {
+    const apiKey = getNeonApiKey();
+    if (!apiKey) throw new Error("Neon API key not set");
+    neonToolkit = new NeonToolkit(apiKey);
+    const project = neonProjects[projectId];
+    if (!project) throw new Error("Project not found");
+    const result = await neonToolkit.sql(project, query);
+    if (writeMigration) {
+      // Save migration file for Neon
+      const { writeNeonMigrationFile } = await import("../utils/file_utils");
+      // Assume project has a 'basePath' or similar property; fallback to cwd
+      const appPath = project.basePath || process.cwd();
+      await writeNeonMigrationFile(appPath, query, description);
+    }
+    return result;
+  },
+);

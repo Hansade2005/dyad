@@ -155,6 +155,7 @@ export const UserSettingsSchema = z.object({
   enableProSmartFilesContextMode: z.boolean().optional(),
   selectedTemplateId: z.string().optional(),
   enableSupabaseWriteSqlMigration: z.boolean().optional(),
+  enableNeonWriteSqlMigration: z.boolean().optional(),
   selectedChatMode: ChatModeSchema.optional(),
 
   enableAutoFixProblems: z.boolean().optional(),

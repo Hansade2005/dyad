@@ -94,6 +94,42 @@ export async function writeMigrationFile(
   await fsExtra.writeFile(migrationFilePath, queryContent);
 }
 
+/**
+ * Write a Neon SQL migration file (mirrors Supabase migration workflow)
+ */
+export async function writeNeonMigrationFile(
+  appPath: string,
+  queryContent: string,
+  queryDescription?: string,
+) {
+  const migrationsDir = path.join(appPath, "neon", "migrations");
+  await fsExtra.ensureDir(migrationsDir);
+
+  const files = await fsExtra.readdir(migrationsDir);
+  const migrationNumbers = files
+    .map((file) => {
+      const match = file.match(/^(\d{4})_/);
+      return match ? parseInt(match[1], 10) : -1;
+    })
+    .filter((num) => num !== -1);
+
+  const nextMigrationNumber =
+    migrationNumbers.length > 0 ? Math.max(...migrationNumbers) + 1 : 0;
+  const paddedNumber = String(nextMigrationNumber).padStart(4, "0");
+
+  let description = "migration";
+  if (queryDescription) {
+    description = queryDescription.toLowerCase().replace(/[\s\W-]+/g, "_");
+  } else {
+    description = generateCuteAppName().replace(/-/g, "_");
+  }
+
+  const migrationFileName = `${paddedNumber}_${description}.sql`;
+  const migrationFilePath = path.join(migrationsDir, migrationFileName);
+
+  await fsExtra.writeFile(migrationFilePath, queryContent);
+}
+
 export async function fileExists(filePath: string) {
   return fsPromises
     .access(filePath)

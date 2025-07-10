@@ -92,13 +92,23 @@ export function useNeon() {
     [loadProjects, setLoading, setError],
   );
 
-  // Run SQL
+  // Expose Neon migration toggle from settings
+  const enableNeonWriteSqlMigration = !!settings?.enableNeonWriteSqlMigration;
+
+  // Run SQL (with migration file support)
   const runSql = useCallback(
-    async (projectId: string, query: string) => {
+    async (
+      projectId: string,
+      query: string,
+      opts?: { description?: string },
+    ) => {
       setLoading(true);
       setError(null);
       try {
-        return await IpcClient.getInstance().runNeonSql(projectId, query);
+        return await IpcClient.getInstance().runNeonSql(projectId, query, {
+          writeMigration: enableNeonWriteSqlMigration,
+          description: opts?.description,
+        });
       } catch (e: any) {
         setError(e.message || "Failed to run SQL");
         throw e;
@@ -106,7 +116,7 @@ export function useNeon() {
         setLoading(false);
       }
     },
-    [setLoading, setError],
+    [setLoading, setError, enableNeonWriteSqlMigration],
   );
 
   // Select project
@@ -128,6 +138,7 @@ export function useNeon() {
     selectedProject,
     selectProject,
     runSql,
+    enableNeonWriteSqlMigration,
     loading,
     error,
   };

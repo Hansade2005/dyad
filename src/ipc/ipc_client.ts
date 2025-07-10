@@ -850,8 +850,16 @@ export class IpcClient {
     return this.ipcRenderer.invoke("neon:list-projects");
   }
 
-  public async runNeonSql(projectId: string, query: string): Promise<any> {
-    return this.ipcRenderer.invoke("neon:run-sql", { projectId, query });
+  public async runNeonSql(
+    projectId: string,
+    query: string,
+    opts?: { writeMigration?: boolean; description?: string },
+  ): Promise<any> {
+    return this.ipcRenderer.invoke("neon:run-sql", {
+      projectId,
+      query,
+      ...opts,
+    });
   }
   // --- End Neon Management ---
 
