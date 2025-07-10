@@ -100,8 +100,12 @@ export function SetupBanner() {
 
   if (itemsNeedAction.length === 0) {
     return (
-      <h1 className="text-6xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 tracking-tight">
-        Build your dream app
+      <h1
+        className="text-4xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 tracking-tight flex items-center gap-4"
+        style={{ fontFamily: "'Fira Sans', 'Inter', 'Segoe UI', 'sans-serif'" }}
+      >
+        <Sparkles className="w-12 h-12 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,255,0,0.7)]" />
+        Code Your Vision with Trio
       </h1>
     );
   }
@@ -125,7 +129,7 @@ export function SetupBanner() {
   return (
     <>
       <p className="text-xl text-zinc-700 dark:text-zinc-300 p-4">
-        Follow these steps and you'll be ready to start building with Dyad...
+        Follow these steps and you'll be ready to start building with Trio...
       </p>
       <div className={bannerClasses}>
         <Accordion
