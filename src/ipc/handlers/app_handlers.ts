@@ -18,7 +18,7 @@ import { promises as fsPromises } from "node:fs";
 
 // Import our utility modules
 import { withLock } from "../utils/lock_utils";
-import { getFilesRecursively } from "../utils/file_utils";
+import { getFilesRecursively, EXCLUDED_DIRS } from "../utils/file_utils";
 import {
   runningApps,
   processCounter,
@@ -55,7 +55,8 @@ async function copyDir(
   await fsPromises.cp(source, destination, {
     recursive: true,
     filter: (src: string) => {
-      if (path.basename(src) === "node_modules") {
+      // Exclude all EXCLUDED_DIRS
+      if (EXCLUDED_DIRS.includes(path.basename(src))) {
         return false;
       }
       if (filter) {

@@ -4,8 +4,8 @@ import path from "node:path";
 import fsExtra from "fs-extra";
 import { generateCuteAppName } from "../../lib/utils";
 
-// Directories to exclude when scanning files
-const EXCLUDED_DIRS = ["node_modules", ".git", ".next"];
+// Directories to exclude when scanning files (shared with import/copy logic)
+export const EXCLUDED_DIRS = ["node_modules", ".git", ".next", "dist", "build"];
 
 /**
  * Recursively gets all files in a directory, excluding node_modules and .git
@@ -44,8 +44,6 @@ export async function copyDirectoryRecursive(
 ) {
   await fsPromises.mkdir(destination, { recursive: true });
   const entries = await fsPromises.readdir(source, { withFileTypes: true });
-  // Why do we sort? This ensures stable ordering of files across platforms
-  // which is helpful for tests (and has no practical downsides).
   entries.sort();
 
   for (const entry of entries) {
@@ -53,8 +51,8 @@ export async function copyDirectoryRecursive(
     const destPath = path.join(destination, entry.name);
 
     if (entry.isDirectory()) {
-      // Exclude node_modules directories
-      if (entry.name !== "node_modules") {
+      // Exclude all EXCLUDED_DIRS
+      if (!EXCLUDED_DIRS.includes(entry.name)) {
         await copyDirectoryRecursive(srcPath, destPath);
       }
     } else {
