@@ -25,6 +25,8 @@ export function HomeChatInput({
     hasChatId: false,
   }); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [websearchActive, setWebsearchActive] = useState(false);
+  const [websearchLoading, setWebsearchLoading] = useState(false);
+  const [websearchError, setWebsearchError] = useState<string | null>(null);
 
   // Use the attachments hook
   const {
@@ -61,13 +63,52 @@ export function HomeChatInput({
     }
   };
 
+  // Helper to check for /websearch command
+  function parseWebsearchCommand(input: string): string | null {
+    const match = input.match(/^\/websearch\s+(.+)/i);
+    return match ? match[1].trim() : null;
+  }
+
+  // Helper to format websearch results for AI context
+  function formatWebsearchResults(results: any): string {
+    if (!results?.results?.length) return "";
+    return (
+      "[Websearch Results]\n" +
+      results.results
+        .map(
+          (doc: any) =>
+            `- ${doc.title} (${doc.url})\n  Source: ${doc.source}\n  Snippets: ${doc.sentences.map((s: string) => `"${s}"`).join(" ")}\n`,
+        )
+        .join("\n")
+    );
+  }
+
   // Custom submit function that wraps the provided onSubmit
-  const handleCustomSubmit = () => {
+  const handleCustomSubmit = async () => {
     if ((!inputValue.trim() && attachments.length === 0) || isStreaming) {
       return;
     }
     let finalInput = inputValue;
-    if (websearchActive) {
+    setWebsearchError(null);
+    // --- /websearch command handling ---
+    const websearchQuery = parseWebsearchCommand(inputValue);
+    if (websearchQuery) {
+      setWebsearchLoading(true);
+      try {
+        const results = await (
+          await import("@/ipc/ipc_client")
+        ).IpcClient.getInstance().invoke("websearch:with-snippets", {
+          query: websearchQuery,
+        });
+        const context = formatWebsearchResults(results);
+        finalInput = `${context}\n\n${inputValue}`;
+      } catch (err: any) {
+        setWebsearchError(err?.message || "Websearch failed");
+        setWebsearchLoading(false);
+        return;
+      }
+      setWebsearchLoading(false);
+    } else if (websearchActive) {
       finalInput =
         "[Websearch is available. Use /websearch <query> to fetch real-time data.]\n" +
         inputValue;
@@ -87,6 +128,14 @@ export function HomeChatInput({
   return (
     <>
       <div className="p-4" data-testid="home-chat-input-container">
+        {websearchLoading && (
+          <div className="p-2 text-blue-600 text-sm">
+            Performing websearch...
+          </div>
+        )}
+        {websearchError && (
+          <div className="p-2 text-red-600 text-sm">{websearchError}</div>
+        )}
         <div
           className={`relative flex flex-col space-y-2 border border-border rounded-2xl bg-white/60 dark:bg-gray-900/60 shadow-lg backdrop-blur-md transition-all duration-200 ${
             isDraggingOver ? "ring-2 ring-blue-500 border-blue-500" : ""

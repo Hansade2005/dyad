@@ -1099,4 +1099,9 @@ export class IpcClient {
   public async setVercelToken(token: string): Promise<void> {
     await this.ipcRenderer.invoke("vercel:set-token", { token });
   }
+
+  // Generic invoke method for custom IPC calls
+  public async invoke<T = any>(channel: string, ...args: any[]): Promise<T> {
+    return this.ipcRenderer.invoke(channel, ...args);
+  }
 }
