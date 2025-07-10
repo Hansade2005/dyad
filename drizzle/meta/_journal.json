@@ -57,6 +57,13 @@
       "when": 1750186036000,
       "tag": "0007_dapper_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1752171774919,
+      "tag": "0008_steep_warhawk",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `apps` ADD `vercel_project_id` text;
