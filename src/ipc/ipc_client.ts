@@ -41,6 +41,7 @@ import type {
 } from "./ipc_types";
 import type { AppChatContext, ProposalResult } from "@/lib/schemas";
 import { showError } from "@/lib/toast";
+import "./handlers/neon_handlers";
 
 export interface ChatStreamCallbacks {
   onUpdate: (messages: Message[]) => void;
@@ -832,6 +833,28 @@ export class IpcClient {
   }
   // --- End Vercel Management ---
 
+  // --- Neon Management ---
+  public async setNeonApiKey(apiKey: string): Promise<void> {
+    await this.ipcRenderer.invoke("neon:set-api-key", { apiKey });
+  }
+
+  public async createNeonProject(projectOptions?: any): Promise<any> {
+    return this.ipcRenderer.invoke("neon:create-project", { projectOptions });
+  }
+
+  public async deleteNeonProject(projectId: string): Promise<void> {
+    await this.ipcRenderer.invoke("neon:delete-project", { projectId });
+  }
+
+  public async listNeonProjects(): Promise<any[]> {
+    return this.ipcRenderer.invoke("neon:list-projects");
+  }
+
+  public async runNeonSql(projectId: string, query: string): Promise<any> {
+    return this.ipcRenderer.invoke("neon:run-sql", { projectId, query });
+  }
+  // --- End Neon Management ---
+
   public async getSystemDebugInfo(): Promise<SystemDebugInfo> {
     return this.ipcRenderer.invoke("get-system-debug-info");
   }
@@ -1062,5 +1085,10 @@ export class IpcClient {
     appId: number;
   }): Promise<ProblemReport> {
     return this.ipcRenderer.invoke("check-problems", params);
+  }
+
+  // Set Vercel API token
+  public async setVercelToken(token: string): Promise<void> {
+    await this.ipcRenderer.invoke("vercel:set-token", { token });
   }
 }

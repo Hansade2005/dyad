@@ -21,6 +21,8 @@ import { AutoFixProblemsSwitch } from "@/components/AutoFixProblemsSwitch";
 import { AutoUpdateSwitch } from "@/components/AutoUpdateSwitch";
 import { ReleaseChannelSelector } from "@/components/ReleaseChannelSelector";
 import { Copy } from "lucide-react";
+import { NeonConnector } from "@/components/NeonConnector";
+import { VercelConnector } from "@/components/VercelConnector";
 
 export default function SettingsPage() {
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
@@ -112,6 +114,8 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <GitHubIntegration />
               <SupabaseIntegration />
+              <VercelConnector appId={0} />
+              <NeonConnector />
             </div>
           </div>
 

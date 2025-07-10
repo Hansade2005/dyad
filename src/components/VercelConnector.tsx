@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useVercel } from "@/hooks/useVercel";
 import { Button } from "@/components/ui/button";
-import { VercelTokenInput } from "./VercelTokenInput";
 import { useLoadApp } from "@/hooks/useLoadApp";
 import { IpcClient } from "@/ipc/ipc_client";
 import { VercelEnvManager } from "./VercelEnvManager";
@@ -18,11 +17,13 @@ export function VercelConnector({ appId }: { appId: number }) {
     unsetAppProject,
     selectProject,
     deployProject,
+    vercelApiKey,
+    vercelApiKeySet,
+    saveVercelApiKey,
   } = useVercel();
   const { app } = useLoadApp(appId);
 
   const [teamId, setTeamId] = useState("");
-  const [tokenSaved, setTokenSaved] = useState(false);
   const [deployStatus, setDeployStatus] = useState<string | null>(null);
   const [deploying, setDeploying] = useState(false);
   const [commitInfo, setCommitInfo] = useState<{
@@ -35,13 +36,18 @@ export function VercelConnector({ appId }: { appId: number }) {
   const [deploymentStatus, setDeploymentStatus] = useState<any>(null);
   const [deploymentLogs, setDeploymentLogs] = useState<any[]>([]);
   const [showGuide, setShowGuide] = useState(false);
+  const [vercelApiKeyInput, setVercelApiKeyInput] = useState("");
+  const [vercelSaveStatus, setVercelSaveStatus] = useState<string | null>(null);
+
+  // Show current key in masked form
+  const maskedKey = vercelApiKeySet ? "••••••••••••••••" : "Not set";
 
   const { getDeploymentStatus, getDeploymentLogs } = useVercel();
 
   useEffect(() => {
     loadProjects(teamId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId, tokenSaved]);
+  }, [teamId]);
 
   useEffect(() => {
     async function fetchCommit() {
@@ -140,6 +146,17 @@ export function VercelConnector({ appId }: { appId: number }) {
     }
   };
 
+  const handleSaveKey = async () => {
+    setVercelSaveStatus(null);
+    try {
+      await saveVercelApiKey(vercelApiKeyInput);
+      setVercelSaveStatus("API key saved!");
+      setVercelApiKeyInput("");
+    } catch (e: any) {
+      setVercelSaveStatus(e.message || "Failed to save API key");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold">Vercel Integration</h2>
@@ -199,7 +216,43 @@ export function VercelConnector({ appId }: { appId: number }) {
           </div>
         )}
       </div>
-      <VercelTokenInput onTokenSaved={() => setTokenSaved((s) => !s)} />
+      <div>
+        <label className="block mb-1 font-medium">Vercel API Token:</label>
+        {vercelApiKeySet ? (
+          <div className="mb-1 text-green-700">
+            API key is saved ({vercelApiKey ? `${"*".repeat(8)}...` : "masked"})
+          </div>
+        ) : (
+          <div className="mb-1 text-gray-500">No API key set</div>
+        )}
+        <div>
+          <label className="block font-medium">Current API Key:</label>
+          <span className="font-mono select-all">{maskedKey}</span>
+        </div>
+        <div className="flex gap-2 items-end">
+          <input
+            type="password"
+            className="border rounded px-2 py-1 w-full"
+            value={vercelApiKeyInput}
+            onChange={(e) => setVercelApiKeyInput(e.target.value)}
+            placeholder="Paste your Vercel token here"
+            disabled={loading}
+          />
+          <Button
+            onClick={handleSaveKey}
+            disabled={
+              loading ||
+              !vercelApiKeyInput ||
+              vercelApiKeyInput === vercelApiKey
+            }
+          >
+            Save
+          </Button>
+        </div>
+        {vercelSaveStatus && (
+          <div className="text-green-600">{vercelSaveStatus}</div>
+        )}
+      </div>
       <div>
         <label className="block mb-2">Team ID (optional):</label>
         <input

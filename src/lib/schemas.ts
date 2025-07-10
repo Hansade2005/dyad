@@ -137,6 +137,11 @@ export const UserSettingsSchema = z.object({
   githubUser: GithubUserSchema.optional(),
   githubAccessToken: SecretSchema.optional(),
   supabase: SupabaseSchema.optional(),
+
+  // Persistent API keys for Vercel and Neon integrations
+  vercel: z.object({ apiKey: SecretSchema.optional() }).optional(),
+  neon: z.object({ apiKey: SecretSchema.optional() }).optional(),
+
   autoApproveChanges: z.boolean().optional(),
   telemetryConsent: z.enum(["opted_in", "opted_out", "unset"]).optional(),
   telemetryUserId: z.string().optional(),

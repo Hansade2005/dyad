@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import {
   vercelProjectsAtom,
@@ -7,16 +7,31 @@ import {
   selectedVercelProjectAtom,
 } from "@/atoms/vercelAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
+import { useSettings } from "@/hooks/useSettings";
 
 export function useVercel() {
+  const { settings, updateSettings } = useSettings();
   const [projects, setProjects] = useAtom(vercelProjectsAtom);
   const [loading, setLoading] = useAtom(vercelLoadingAtom);
   const [error, setError] = useAtom(vercelErrorAtom);
   const [selectedProject, setSelectedProject] = useAtom(
     selectedVercelProjectAtom,
   );
+  const [vercelApiKey, setVercelApiKey] = useState<string | null>(null);
 
   const ipcClient = IpcClient.getInstance();
+
+  // Sync persisted API key from settings on load
+  useEffect(() => {
+    if (settings?.vercel?.apiKey?.value) {
+      setVercelApiKey(settings.vercel.apiKey.value);
+    } else {
+      setVercelApiKey(null);
+    }
+  }, [settings]);
+
+  // Helper: is API key set
+  const vercelApiKeySet = !!vercelApiKey;
 
   /**
    * Load Vercel projects from the API
@@ -163,11 +178,31 @@ export function useVercel() {
     [ipcClient],
   );
 
+  // Save API key and update both backend and local state
+  const saveVercelApiKey = useCallback(
+    async (key: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await IpcClient.getInstance().setVercelToken(key);
+        setVercelApiKey(key);
+        await updateSettings({ vercel: { apiKey: { value: key } } });
+      } catch (e: any) {
+        setError(e.message || "Failed to set Vercel API key");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setVercelApiKey, setLoading, setError, updateSettings],
+  );
+
   return {
     projects,
     loading,
     error,
     selectedProject,
+    vercelApiKey,
+    vercelApiKeySet,
     loadProjects,
     setAppProject,
     unsetAppProject,
@@ -181,5 +216,6 @@ export function useVercel() {
     listDomains,
     addDomain,
     removeDomain,
+    saveVercelApiKey,
   };
 }

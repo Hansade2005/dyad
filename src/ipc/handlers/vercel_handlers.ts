@@ -4,17 +4,14 @@ import { eq } from "drizzle-orm";
 import { apps } from "../../db/schema";
 import { createLoggedHandler } from "./safe_handle";
 import fetch, { Response as NodeFetchResponse } from "node-fetch";
+import { readSettings, writeSettings } from "../../main/settings";
 
 const logger = log.scope("vercel_handlers");
 const handle = createLoggedHandler(logger);
 
-// Helper to get Vercel access token from settings (implement as needed)
+// Helper to get Vercel access token from persistent user settings
 function getVercelAccessToken() {
-  // TODO: Replace with your real settings storage
-  const settings = require("../../main/settings");
-  return (
-    settings.readSettings().vercelAccessToken?.value || process.env.VERCEL_TOKEN
-  );
+  return readSettings().vercel?.apiKey?.value || process.env.VERCEL_TOKEN;
 }
 
 // Fetch Vercel projects using the Vercel API, with teamId and pagination support
@@ -52,11 +49,8 @@ export function registerVercelHandlers() {
 
   // Set Vercel access token in settings (for UI token entry)
   handle("vercel:set-token", async (_event, { token }) => {
-    const settings = require("../../main/settings");
-    const current = settings.readSettings();
-    await settings.writeSettings({
-      ...current,
-      vercelAccessToken: { value: token },
+    writeSettings({
+      vercel: { apiKey: { value: token } },
     });
     logger.info("Vercel access token updated via UI");
   });
