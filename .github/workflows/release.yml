@@ -55,11 +55,11 @@ jobs:
         id: find_windows_output
         if: contains(matrix.os.name, 'windows')
         run: |
-          # Based on your Playwright output, the Windows build output is consistently in 'out/dyad-win32-x64'
-          $outputDir = "out/dyad-win32-x64"
+          # Updated: Based on your Playwright output, the Windows build output is in 'out/make'
+          $outputDir = "out/make"
           if (-Not (Test-Path $outputDir)) {
               Write-Error "Expected Windows build output directory '$outputDir' not found."
-              # For debugging, list 'out' directory if 'out/dyad-win32-x64' isn't exact
+              # For debugging, list 'out' directory if 'out/make' isn't exact
               if (Test-Path "out") {
                   Write-Host "Contents of 'out' directory:"
                   Get-ChildItem -Path "out" -Recurse | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
