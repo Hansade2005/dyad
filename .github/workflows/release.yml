@@ -111,6 +111,13 @@ jobs:
           # Uploads all contents of the detected directory
           path: ${{ steps.find_linux_output.outputs.artifact_path }}/*
           retention-days: 7
+      - name: Upload Windows Installer Artifact
+        if: contains(matrix.os.name, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: out/make/squirrel.windows/x64/*.exe
+          retention-days: 7
 
   # =====================================================================
   # CREATE GITHUB RELEASE
@@ -145,4 +152,5 @@ jobs:
           prerelease: false # Set to true for pre-releases
           files: |
             artifacts/windows-app/**/* # Adjust to include all contents, including subdirectories
+            artifacts/windows-installer/*.exe # Include the Windows installer
             artifacts/linux-app/**/* # Adjust to include all contents, including subdirectories
