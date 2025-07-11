@@ -155,21 +155,12 @@ export const UserSettingsSchema = z.object({
   enableProSmartFilesContextMode: z.boolean().optional(),
   selectedTemplateId: z.string().optional(),
   enableSupabaseWriteSqlMigration: z.boolean().optional(),
-  enableNeonWriteSqlMigration: z.boolean().optional(),
   selectedChatMode: ChatModeSchema.optional(),
 
   enableAutoFixProblems: z.boolean().optional(),
   enableNativeGit: z.boolean().optional(),
   enableAutoUpdate: z.boolean(),
   releaseChannel: ReleaseChannelSchema,
-
-  // Websearch config for Google CSE
-  websearch: z
-    .object({
-      googleCseCx: z.string().optional(),
-      googleCseApiKey: z.string().optional(),
-    })
-    .optional(),
 
   ////////////////////////////////
   // E2E TESTING ONLY.

@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNeon } from "@/hooks/useNeon";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useSettings } from "@/hooks/useSettings";
 
 export function NeonConnector() {
   const {
@@ -20,7 +17,6 @@ export function NeonConnector() {
     loading,
     error,
   } = useNeon();
-  const { settings, updateSettings } = useSettings();
 
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -28,12 +24,9 @@ export function NeonConnector() {
   const [sqlResult, setSqlResult] = useState<any>(null);
   const [sqlError, setSqlError] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
-  const [isSavingMigrationSetting, setIsSavingMigrationSetting] =
-    useState(false);
 
   // Show current key in masked form
   const maskedKey = apiKeySet ? "••••••••••••••••" : "Not set";
-  const enableNeonWriteSqlMigration = !!settings?.enableNeonWriteSqlMigration;
 
   useEffect(() => {
     if (apiKey) loadProjects();
@@ -75,12 +68,6 @@ export function NeonConnector() {
     } catch (e: any) {
       setSqlError(e.message || "SQL error");
     }
-  };
-
-  const handleMigrationSettingChange = async (enabled: boolean) => {
-    setIsSavingMigrationSetting(true);
-    await updateSettings({ enableNeonWriteSqlMigration: enabled });
-    setIsSavingMigrationSetting(false);
   };
 
   return (
@@ -213,27 +200,6 @@ export function NeonConnector() {
             {JSON.stringify(sqlResult, null, 2)}
           </pre>
         )}
-      </div>
-      {/* SQL Migration Files Setting */}
-      <div className="mt-4">
-        <div className="flex items-center space-x-3">
-          <Switch
-            id="neon-migrations"
-            checked={enableNeonWriteSqlMigration}
-            onCheckedChange={handleMigrationSettingChange}
-            disabled={isSavingMigrationSetting}
-          />
-          <div className="space-y-1">
-            <Label htmlFor="neon-migrations" className="text-sm font-medium">
-              Write SQL migration files
-            </Label>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Generate SQL migration files when modifying your Neon schema. This
-              helps you track database changes in version control, though these
-              files aren't used for chat context, which uses the live schema.
-            </p>
-          </div>
-        </div>
       </div>
       {/* Feedback */}
       {error && <div className="text-red-600">{error}</div>}

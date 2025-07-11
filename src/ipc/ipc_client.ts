@@ -850,16 +850,8 @@ export class IpcClient {
     return this.ipcRenderer.invoke("neon:list-projects");
   }
 
-  public async runNeonSql(
-    projectId: string,
-    query: string,
-    opts?: { writeMigration?: boolean; description?: string },
-  ): Promise<any> {
-    return this.ipcRenderer.invoke("neon:run-sql", {
-      projectId,
-      query,
-      ...opts,
-    });
+  public async runNeonSql(projectId: string, query: string): Promise<any> {
+    return this.ipcRenderer.invoke("neon:run-sql", { projectId, query });
   }
   // --- End Neon Management ---
 
@@ -1098,10 +1090,5 @@ export class IpcClient {
   // Set Vercel API token
   public async setVercelToken(token: string): Promise<void> {
     await this.ipcRenderer.invoke("vercel:set-token", { token });
-  }
-
-  // Generic invoke method for custom IPC calls
-  public async invoke<T = any>(channel: string, ...args: any[]): Promise<T> {
-    return this.ipcRenderer.invoke(channel, ...args);
   }
 }

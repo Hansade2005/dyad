@@ -145,30 +145,6 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     }
   };
 
-  const [websearchActive, setWebsearchActive] = useState(false);
-  const [websearchLoading, setWebsearchLoading] = useState(false);
-  const [websearchError, setWebsearchError] = useState<string | null>(null);
-
-  // Helper to check for /websearch command
-  function parseWebsearchCommand(input: string): string | null {
-    const match = input.match(/^\/websearch\s+(.+)/i);
-    return match ? match[1].trim() : null;
-  }
-
-  // Helper to format websearch results for AI context
-  function formatWebsearchResults(results: any): string {
-    if (!results?.results?.length) return "";
-    return (
-      "[Websearch Results]\n" +
-      results.results
-        .map(
-          (doc: any) =>
-            `- ${doc.title} (${doc.url})\n  Source: ${doc.source}\n  Snippets: ${doc.sentences.map((s: string) => `"${s}"`).join(" ")}\n`,
-        )
-        .join("\n")
-    );
-  }
-
   const handleSubmit = async () => {
     if (
       (!inputValue.trim() && attachments.length === 0) ||
@@ -177,37 +153,14 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     ) {
       return;
     }
-    let finalInput = inputValue;
-    setWebsearchError(null);
-    // --- /websearch command handling ---
-    const websearchQuery = parseWebsearchCommand(inputValue);
-    if (websearchQuery) {
-      setWebsearchLoading(true);
-      try {
-        // Use a public method for IPC invoke
-        const results = await IpcClient.getInstance().invoke(
-          "websearch:with-snippets",
-          { query: websearchQuery },
-        );
-        const context = formatWebsearchResults(results);
-        finalInput = `${context}\n\n${inputValue}`;
-      } catch (err: any) {
-        setWebsearchError(err?.message || "Websearch failed");
-        setWebsearchLoading(false);
-        return;
-      }
-      setWebsearchLoading(false);
-    } else if (websearchActive) {
-      finalInput =
-        "[Websearch is available. Use /websearch <query> to fetch real-time data.]\n" +
-        inputValue;
-    }
+
+    const currentInput = inputValue;
     setInputValue("");
     setSelectedComponent(null);
 
     // Send message with attachments and clear them after sending
     await streamMessage({
-      prompt: finalInput,
+      prompt: currentInput,
       chatId,
       attachments,
       redo: false,
@@ -315,14 +268,6 @@ export function ChatInput({ chatId }: { chatId?: number }) {
         </div>
       )}
       <div className="p-4" data-testid="chat-input-container">
-        {websearchLoading && (
-          <div className="p-2 text-blue-600 text-sm">
-            Performing websearch...
-          </div>
-        )}
-        {websearchError && (
-          <div className="p-2 text-red-600 text-sm">{websearchError}</div>
-        )}
         <div
           className={`relative flex flex-col border border-border rounded-lg bg-(--background-lighter) shadow-sm ${
             isDraggingOver ? "ring-2 ring-blue-500 border-blue-500" : ""
@@ -396,11 +341,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
           </div>
           <div className="pl-2 pr-1 flex items-center justify-between pb-2">
             <div className="flex items-center">
-              <ChatInputControls
-                showContextFilesPicker={true}
-                websearchActive={websearchActive}
-                onWebsearchToggle={setWebsearchActive}
-              />
+              <ChatInputControls showContextFilesPicker={true} />
               {/* File attachment button */}
               <TooltipProvider>
                 <Tooltip>

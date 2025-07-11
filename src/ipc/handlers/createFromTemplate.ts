@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 import { app } from "electron";
-const { copyDirectoryRecursive } = require("../utils/file_utils");
+import { copyDirectoryRecursive } from "../utils/file_utils";
 import { readSettings } from "@/main/settings";
 import { DEFAULT_TEMPLATE_ID, getTemplateOrThrow } from "@/shared/templates";
 import log from "electron-log";
