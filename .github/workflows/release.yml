@@ -55,11 +55,11 @@ jobs:
         id: find_windows_output
         if: contains(matrix.os.name, 'windows')
         run: |
-          # Updated: Based on your Playwright output, the Windows build output is in 'out/make'
-          $outputDir = "out/make"
+          # Updated: Based on your build output, the Windows build output is in 'out/trio-win32-x64'
+          $outputDir = "out/trio-win32-x64"
           if (-Not (Test-Path $outputDir)) {
               Write-Error "Expected Windows build output directory '$outputDir' not found."
-              # For debugging, list 'out' directory if 'out/make' isn't exact
+              # For debugging, list 'out' directory if 'out/trio-win32-x64' isn't exact
               if (Test-Path "out") {
                   Write-Host "Contents of 'out' directory:"
                   Get-ChildItem -Path "out" -Recurse | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
@@ -76,10 +76,8 @@ jobs:
         id: find_linux_output
         if: contains(matrix.os.name, 'linux')
         run: |
-          # !! IMPORTANT: You will need to observe the output of your Linux build to set this path accurately.
-          # Common for Electron are 'out/dyad-linux-x64', 'dist/dyad-linux-x64', or 'release/dyad-linux-x64'.
-          # Using a common placeholder based on the Windows pattern for now.
-          output_dir="out/dyad-linux-x64" # <-- **ADJUST THIS BASED ON YOUR LINUX BUILD OUTPUT!**
+          # Updated: Based on your build output, the Linux build output is in 'out/trio-linux-x64'
+          output_dir="out/trio-linux-x64"
           if [ ! -d "$output_dir" ]; then
               echo "Expected Linux build output directory '$output_dir' not found."
               # For debugging, list 'out' directory if '$output_dir' isn't exact
