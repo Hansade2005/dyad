@@ -1,0 +1,18 @@
+{
+  "selectedModel": {
+    "name": "auto",
+    "provider": "auto"
+  },
+  "providerSettings": {},
+  "telemetryConsent": "unset",
+  "telemetryUserId": "[UUID]",
+  "hasRunBefore": true,
+  "experiments": {},
+  "enableProLazyEditsMode": true,
+  "enableProSmartFilesContextMode": true,
+  "selectedChatMode": "build",
+  "enableAutoFixProblems": false,
+  "enableAutoUpdate": true,
+  "releaseChannel": "stable",
+  "isTestMode": true
+}
