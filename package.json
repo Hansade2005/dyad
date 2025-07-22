@@ -1,12 +1,12 @@
 {
-  "name": "dyad",
-  "productName": "dyad",
-  "version": "0.14.0-beta.1",
-  "description": "My Electron application description",
+  "name": "trio",
+  "productName": "Trio",
+  "version": "0.0.1",
+  "description": "Trio is a smart AI app builder that lets you design, develop, and deploy full-featured AI-powered applications with minimal effort. Sleek developer experience and seamless integration with popular AI models.",
   "main": ".vite/build/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dyad-sh/dyad.git"
+    "url": "https://github.com/Hansade2005/dyad.git"
   },
   "engines": {
     "node": ">=20"
@@ -42,8 +42,8 @@
   },
   "keywords": [],
   "author": {
-    "name": "Will Chen",
-    "email": "willchen90@gmail.com"
+    "name": "Hans Ade",
+    "email": "hanscadx8@gmail.com"
   },
   "license": "MIT",
   "devDependencies": {
