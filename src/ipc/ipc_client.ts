@@ -1019,4 +1019,13 @@ export class IpcClient {
   }): Promise<ProblemReport> {
     return this.ipcRenderer.invoke("check-problems", params);
   }
+
+  /**
+   * Search the web using TavilySearch API via IPC.
+   * @param query The search query string.
+   * @returns The search results from TavilySearch API.
+   */
+  public async searchWeb({ query }: { query: string }): Promise<{ results: any }> {
+    return this.ipcRenderer.invoke("websearch", { query });
+  }
 }

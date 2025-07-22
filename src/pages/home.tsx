@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtom, useSetAtom } from "jotai";
-import { homeChatInputValueAtom } from "../atoms/chatAtoms";
+import { homeChatInputValueAtom, webSearchAllowedAtom } from "../atoms/chatAtoms";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { IpcClient } from "@/ipc/ipc_client";
 import { generateCuteAppName } from "@/lib/utils";
@@ -32,6 +32,7 @@ import { useQueryClient } from "@tanstack/react-query";
 // Adding an export for attachments
 export interface HomeSubmitOptions {
   attachments?: File[];
+  webSearchAllowed?: boolean;
 }
 
 export default function HomePage() {
@@ -50,6 +51,7 @@ export default function HomePage() {
   const [releaseUrl, setReleaseUrl] = useState("");
   const { theme } = useTheme();
   const queryClient = useQueryClient();
+  const [webSearchAllowed] = useAtom(webSearchAllowedAtom);
   useEffect(() => {
     const updateLastVersionLaunched = async () => {
       if (
@@ -109,6 +111,7 @@ export default function HomePage() {
 
   const handleSubmit = async (options?: HomeSubmitOptions) => {
     const attachments = options?.attachments || [];
+    const webSearchAllowedFlag = options?.webSearchAllowed ?? webSearchAllowed;
 
     if (!inputValue.trim() && attachments.length === 0) return;
 
@@ -124,6 +127,7 @@ export default function HomePage() {
         prompt: inputValue,
         chatId: result.chatId,
         attachments,
+        webSearchAllowed: webSearchAllowedFlag,
       });
       await new Promise((resolve) =>
         setTimeout(resolve, settings?.isTestMode ? 0 : 2000),

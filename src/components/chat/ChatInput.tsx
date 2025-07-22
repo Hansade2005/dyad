@@ -27,6 +27,7 @@ import {
   chatInputValueAtom,
   chatMessagesAtom,
   selectedChatIdAtom,
+  webSearchAllowedAtom,
 } from "@/atoms/chatAtoms";
 import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { useStreamChat } from "@/hooks/useStreamChat";
@@ -86,6 +87,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
     selectedComponentPreviewAtom,
   );
   const { checkProblems } = useCheckProblems(appId);
+  const [webSearchAllowed] = useAtom(webSearchAllowedAtom);
   // Use the attachments hook
   const {
     attachments,
@@ -165,6 +167,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
       attachments,
       redo: false,
       selectedComponent,
+      webSearchAllowed,
     });
     clearAttachments();
     posthog.capture("chat:submit");
@@ -315,7 +318,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               onPaste={handlePaste}
-              placeholder="Ask Dyad to build..."
+              placeholder="Ask Trio to build..."
               className="flex-1 p-2 focus:outline-none overflow-y-auto min-h-[40px] max-h-[200px]"
               style={{ resize: "none" }}
             />

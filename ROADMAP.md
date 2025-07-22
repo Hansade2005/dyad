@@ -4,6 +4,7 @@
 Our app is designed to provide a seamless and efficient experience for users, focusing on core integrations and unique features that set it apart from competitors like lovable.dev.
 
 ## Implemented Features
+- ✅ AI Web Search Integration
 - ✅ Dark Mode Support
 - ✅ Customizable Themes
 - ✅ Multi-Language Support

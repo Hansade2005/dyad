@@ -17,6 +17,7 @@ import { CustomTagState } from "./stateTypes";
 import { DyadOutput } from "./DyadOutput";
 import { DyadProblemSummary } from "./DyadProblemSummary";
 import { IpcClient } from "@/ipc/ipc_client";
+import { WebSearchResult } from "./WebSearchResult";
 
 interface DyadMarkdownParserProps {
   content: string;
@@ -123,6 +124,7 @@ function preprocessUnclosedTags(content: string): {
     "dyad-edit",
     "dyad-codebase-context",
     "think",
+    "websearch-result",
   ];
 
   let processedContent = content;
@@ -189,6 +191,7 @@ function parseCustomTags(content: string): ContentPiece[] {
     "dyad-edit",
     "dyad-codebase-context",
     "think",
+    "websearch-result",
   ];
 
   const tagPattern = new RegExp(
@@ -417,6 +420,9 @@ function renderCustomTag(
     case "dyad-chat-summary":
       // Don't render anything for dyad-chat-summary
       return null;
+
+    case "websearch-result":
+      return <WebSearchResult content={content} />;
 
     default:
       return null;

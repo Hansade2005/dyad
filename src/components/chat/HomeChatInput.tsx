@@ -3,7 +3,7 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 
 import { useSettings } from "@/hooks/useSettings";
-import { homeChatInputValueAtom } from "@/atoms/chatAtoms"; // Use a different atom for home input
+import { homeChatInputValueAtom, webSearchAllowedAtom } from "@/atoms/chatAtoms"; // Use a different atom for home input
 import { useAtom } from "jotai";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { useAttachments } from "@/hooks/useAttachments";
@@ -24,6 +24,7 @@ export function HomeChatInput({
   const { isStreaming } = useStreamChat({
     hasChatId: false,
   }); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [webSearchAllowed] = useAtom(webSearchAllowedAtom);
 
   // Use the attachments hook
   const {
@@ -66,8 +67,8 @@ export function HomeChatInput({
       return;
     }
 
-    // Call the parent's onSubmit handler with attachments
-    onSubmit({ attachments });
+    // Call the parent's onSubmit handler with attachments and webSearchAllowed
+    onSubmit({ attachments, webSearchAllowed });
 
     // Clear attachments as part of submission process
     clearAttachments();
@@ -105,7 +106,7 @@ export function HomeChatInput({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               onPaste={handlePaste}
-              placeholder="Ask Dyad to build..."
+              placeholder="Ask Trio to build..."
               className="flex-1 p-2 focus:outline-none overflow-y-auto min-h-[40px] max-h-[200px]"
               style={{ resize: "none" }}
               disabled={isStreaming} // Should ideally reflect if *any* stream is happening
