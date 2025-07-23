@@ -52,7 +52,7 @@ export const TitleBar = () => {
   const { lastDeepLink } = useDeepLink();
   useEffect(() => {
     const handleDeepLink = async () => {
-      if (lastDeepLink?.type === "dyad-pro-return") {
+      if (lastDeepLink?.type === "trio-pro-return") {
         await refreshSettings();
         showDyadProSuccessDialog();
       }
@@ -202,7 +202,7 @@ export function DyadProButton({
   const { userBudget } = useUserBudgetInfo();
   return (
     <Button
-      data-testid="title-bar-dyad-pro-button"
+      data-testid="title-bar-trio-pro-button"
       onClick={() => {
         navigate({
           to: providerSettingsRoute.id,
