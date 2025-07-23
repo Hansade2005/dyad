@@ -8,7 +8,7 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { AutoUnpackNativesPlugin } from "@electron-forge/plugin-auto-unpack-natives";
 
-// Whitelist of files/folders to include
+// Whitelist of files/folders to always include
 const whitelist = [
   "/drizzle",
   "/scaffold",

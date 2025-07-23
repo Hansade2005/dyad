@@ -25,5 +25,5 @@
 - Comprehensive tutorials and guides
 
 ### Fixed
-- Crash on startup
+- Crash on app startup
 - Typo in welcome screen
