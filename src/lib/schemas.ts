@@ -26,7 +26,10 @@ export type ChatSummary = z.infer<typeof ChatSummarySchema>;
  */
 export const ChatSummariesSchema = z.array(ChatSummarySchema);
 
+
+// Added 'trio' as a built-in provider (Trio AI)
 const providers = [
+  "trio", // Trio AI (masked in UI)
   "openai",
   "anthropic",
   "google",
@@ -36,8 +39,9 @@ const providers = [
   "lmstudio",
 ] as const;
 
+// Trio AI should be included in cloudProviders
 export const cloudProviders = providers.filter(
-  (provider) => provider !== "ollama" && provider !== "lmstudio",
+  (provider) => provider !== "ollama" && provider !== "lmstudio"
 );
 
 /**
@@ -132,7 +136,11 @@ export type ReleaseChannel = z.infer<typeof ReleaseChannelSchema>;
  * Zod schema for user settings
  */
 export const UserSettingsSchema = z.object({
-  selectedModel: LargeLanguageModelSchema,
+  // Set Trio AI as the default selected model
+  selectedModel: LargeLanguageModelSchema.default({
+    provider: "trio",
+    name: "codestral-2501",
+  }),
   providerSettings: z.record(z.string(), ProviderSettingSchema),
   githubUser: GithubUserSchema.optional(),
   githubAccessToken: SecretSchema.optional(),

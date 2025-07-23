@@ -67,6 +67,9 @@ export function ModelPicker() {
 
   // Get display name for the selected model
   const getModelDisplayName = () => {
+    if (selectedModel.provider === "trio") {
+      return "Trio AI";
+    }
     if (selectedModel.provider === "ollama") {
       return (
         ollamaModels.find(
@@ -244,7 +247,7 @@ export function ModelPicker() {
                 <DropdownMenuSub key={providerId}>
                   <DropdownMenuSubTrigger className="w-full font-normal">
                     <div className="flex flex-col items-start">
-                      <span>{provider?.name}</span>
+                      <span>{providerId === "trio" ? "Trio AI" : provider?.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {models.length} models
                       </span>
@@ -252,7 +255,7 @@ export function ModelPicker() {
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-56">
                     <DropdownMenuLabel>
-                      {provider?.name} Models
+                      {providerId === "trio" ? "Trio AI" : provider?.name} Models
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {models.map((model) => (

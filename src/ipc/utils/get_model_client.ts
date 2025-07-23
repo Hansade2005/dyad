@@ -179,6 +179,22 @@ function getRegularModelClient(
   const providerId = providerConfig.id;
   // Create client based on provider ID or type
   switch (providerId) {
+    case "trio": {
+      // Trio AI built-in provider
+      const provider = createOpenAICompatible({
+        name: "trio",
+        baseURL: "https://codestral.mistral.ai/v1",
+        apiKey: "Vtgwkhm6Tzj12tWhaemsNvHhteto826z", // Built-in key
+      });
+      return {
+        modelClient: {
+          // Always use codestral-2501 as the model name
+          model: provider("codestral-2501"),
+          builtinProviderId: providerId,
+        },
+        backupModelClients: [],
+      };
+    }
     case "openai": {
       const provider = createOpenAI({ apiKey });
       return {

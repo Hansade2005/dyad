@@ -21,6 +21,16 @@ export interface ModelOption {
 }
 
 export const MODEL_OPTIONS: Record<string, ModelOption[]> = {
+  trio: [
+    {
+      name: "codestral-2501",
+      displayName: "Trio AI by HansTech",
+      description: "Trio AI model — a powerful coding agent with a large context window (256k tokens)",
+      tag: "Default",
+      maxOutputTokens: 32000,
+      contextWindow: 256000,
+    },
+  ],
   openai: [
     // https://platform.openai.com/docs/models/gpt-4.1
     {
@@ -173,6 +183,12 @@ export const CLOUD_PROVIDERS: Record<
     gatewayPrefix: string;
   }
 > = {
+  trio: {
+    displayName: "Trio AI",
+    hasFreeTier: true,
+    websiteUrl: "https://codestral.mistral.ai/",
+    gatewayPrefix: "",
+  },
   openai: {
     displayName: "OpenAI",
     hasFreeTier: false,

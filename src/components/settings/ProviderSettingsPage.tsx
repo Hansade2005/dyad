@@ -42,6 +42,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
   const supportsCustomModels =
     providerData?.type === "custom" || providerData?.type === "cloud";
 
+
+  const isTrio = provider === "trio";
   const isDyad = provider === "auto";
 
   const [apiKeyInput, setApiKeyInput] = useState("");
@@ -50,14 +52,18 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
   const router = useRouter();
 
   // Use fetched data (or defaults for Dyad)
-  const providerDisplayName = isDyad
+  const providerDisplayName = isTrio
+    ? "Trio AI"
+    : isDyad
     ? "Dyad"
     : (providerData?.name ?? "Unknown Provider");
-  const providerWebsiteUrl = isDyad
+  const providerWebsiteUrl = isTrio
+    ? "https://codestral.mistral.ai/"
+    : isDyad
     ? "https://academy.dyad.sh/settings"
     : providerData?.websiteUrl;
-  const hasFreeTier = isDyad ? false : providerData?.hasFreeTier;
-  const envVarName = isDyad ? undefined : providerData?.envVarName;
+  const hasFreeTier = isTrio ? true : isDyad ? false : providerData?.hasFreeTier;
+  const envVarName = isTrio ? undefined : isDyad ? undefined : providerData?.envVarName;
 
   // Use provider ID (which is the 'provider' prop)
   const userApiKey = settings?.providerSettings?.[provider]?.apiKey?.value;
