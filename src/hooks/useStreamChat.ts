@@ -61,12 +61,14 @@ export function useStreamChat({
       redo,
       attachments,
       selectedComponent,
+      webSearchAllowed,
     }: {
       prompt: string;
       chatId: number;
       redo?: boolean;
       attachments?: File[];
       selectedComponent?: ComponentSelection | null;
+      webSearchAllowed?: boolean;
     }) => {
       if (
         (!prompt.trim() && (!attachments || attachments.length === 0)) ||
@@ -85,6 +87,7 @@ export function useStreamChat({
           chatId,
           redo,
           attachments,
+          webSearchAllowed,
           onUpdate: (updatedMessages: Message[]) => {
             if (!hasIncrementedStreamCount) {
               setStreamCount((streamCount) => streamCount + 1);

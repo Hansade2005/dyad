@@ -3,6 +3,7 @@ import fsAsync from "node:fs/promises";
 import path from "node:path";
 import { isIgnored } from "isomorphic-git";
 import log from "electron-log";
+import { togetherChatCompletion } from './togetherApi';
 import { IS_TEST_BUILD } from "../ipc/utils/test_utils";
 import { glob } from "glob";
 import { AppChatContext } from "../lib/schemas";
@@ -48,6 +49,18 @@ const EXCLUDED_DIRS = ["node_modules", ".git", "dist", "build"];
 
 // Files to always exclude
 const EXCLUDED_FILES = ["pnpm-lock.yaml", "package-lock.json"];
+export async function selectRelevantFilesWithTogether(query: string, fileSummaries: { path: string; summary: string }[]): Promise<string[]> {
+  const prompt = `Given the following codebase files and summaries, and the user query, return a JSON array of the most relevant file paths.\n\nUser query: ${query}\n\nFiles:\n${fileSummaries.map(f => `- ${f.path}: ${f.summary}`).join('\n')}\n\nRespond ONLY with a JSON array of file paths, no explanation.`;
+  const response = await togetherChatCompletion([
+    { role: 'user', content: prompt }
+  ]);
+  try {
+    const arr = JSON.parse(response.match(/\[.*\]/s)?.[0] || '[]');
+    return Array.isArray(arr) ? arr.filter(x => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 // Files to always include, regardless of extension
 const ALWAYS_INCLUDE_FILES = ["package.json"];
@@ -404,8 +417,8 @@ export async function extractCodebase({
   files: CodebaseFile[];
 }> {
   const settings = readSettings();
-  const isSmartContextEnabled =
-    settings?.enableDyadPro && settings?.enableProSmartFilesContextMode;
+  // Smart context is now togglable independently of Pro
+  const isSmartContextEnabled = settings?.enableProSmartFilesContextMode;
 
   try {
     await fsAsync.access(appPath);

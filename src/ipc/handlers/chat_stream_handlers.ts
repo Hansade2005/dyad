@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { ipcMain } from "electron";
+import { ipcMain, ipcRenderer } from "electron";
 import {
   CoreMessage,
   TextPart,
@@ -8,6 +8,8 @@ import {
   ToolSet,
   TextStreamPart,
 } from "ai";
+
+import { performWebSearch } from "../../utils/websearch";
 import { db } from "../../db";
 import { chats, messages } from "../../db/schema";
 import { and, eq, isNull } from "drizzle-orm";
@@ -102,12 +104,15 @@ if (!fs.existsSync(TEMP_DIR)) {
 }
 
 // Helper function to process stream chunks
+// Enhanced processStreamChunks to handle 'searchWeb' tool calls
 async function processStreamChunks({
   fullStream,
   fullResponse,
   abortController,
   chatId,
   processResponseChunkUpdate,
+  webSearchAllowed,
+  event,
 }: {
   fullStream: AsyncIterableStream<TextStreamPart<ToolSet>>;
   fullResponse: string;
@@ -116,11 +121,33 @@ async function processStreamChunks({
   processResponseChunkUpdate: (params: {
     fullResponse: string;
   }) => Promise<string>;
+  webSearchAllowed: boolean;
+  event: Electron.IpcMainInvokeEvent;
 }): Promise<{ fullResponse: string; incrementalResponse: string }> {
   let incrementalResponse = "";
   let inThinkingBlock = false;
 
   for await (const part of fullStream) {
+    // Intercept tool calls for web search
+    if (part.type === "tool-call" && part.toolName === "searchWeb") {
+      if (!webSearchAllowed) {
+        // If not allowed, inject a warning
+        const warning = "\n<websearch-result>\nWeb search is disabled for this chat.\n</websearch-result>\n";
+        fullResponse += warning;
+        incrementalResponse += warning;
+        fullResponse = await processResponseChunkUpdate({ fullResponse });
+        continue;
+      }
+      // Perform the web search using the shared utility
+      const query = part.args?.query || part.args?.input || "";
+      let resultContent = await performWebSearch(query);
+      // Wrap in websearch-result tag for UI rendering
+      const resultBlock = `\n<websearch-result>\n${resultContent}\n</websearch-result>\n`;
+      fullResponse += resultBlock;
+      incrementalResponse += resultBlock;
+      fullResponse = await processResponseChunkUpdate({ fullResponse });
+      continue;
+    }
     let chunk = "";
     if (part.type === "text-delta") {
       if (inThinkingBlock) {
@@ -133,28 +160,23 @@ async function processStreamChunks({
         chunk = "<think>";
         inThinkingBlock = true;
       }
-
       chunk += escapeDyadTags(part.textDelta);
     }
-
     if (!chunk) {
       continue;
     }
-
     fullResponse += chunk;
     incrementalResponse += chunk;
     fullResponse = cleanFullResponse(fullResponse);
     fullResponse = await processResponseChunkUpdate({
       fullResponse,
     });
-
     // If the stream was aborted, exit early
     if (abortController.signal.aborted) {
       logger.log(`Stream for chat ${chatId} was aborted`);
       break;
     }
   }
-
   return { fullResponse, incrementalResponse };
 }
 
@@ -164,6 +186,10 @@ export function registerChatStreamHandlers() {
       // Create an AbortController for this stream
       const abortController = new AbortController();
       activeStreams.set(req.chatId, abortController);
+
+      // Access webSearchAllowed from req if needed
+      const webSearchAllowed = req.webSearchAllowed ?? false;
+      // TODO: Use webSearchAllowed in your streaming logic as needed
 
       // Get the chat to check for existing messages
       const chat = await db.query.chats.findFirst({
@@ -622,7 +648,7 @@ This conversation includes one or more image attachments. When the user uploads 
           modelClient,
         });
 
-        // Process the stream as before
+        // Process the stream, now with web search tool call support
         try {
           const result = await processStreamChunks({
             fullStream,
@@ -630,6 +656,8 @@ This conversation includes one or more image attachments. When the user uploads 
             abortController,
             chatId: req.chatId,
             processResponseChunkUpdate,
+            webSearchAllowed,
+            event,
           });
           fullResponse = result.fullResponse;
 
@@ -775,6 +803,8 @@ ${problemReport.problems
                   abortController,
                   chatId: req.chatId,
                   processResponseChunkUpdate,
+                  webSearchAllowed,
+                  event,
                 });
                 fullResponse = result.fullResponse;
                 previousAttempts.push({

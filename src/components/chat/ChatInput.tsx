@@ -256,7 +256,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
         <ChatErrorBox
           onDismiss={dismissError}
           error={error}
-          isDyadProEnabled={settings.enableDyadPro ?? false}
+          isDyadProEnabled={false} // Always false, Dyad Pro is deprecated
         />
       )}
       {/* Display loading or error state for proposal */}

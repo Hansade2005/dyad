@@ -24,6 +24,7 @@ export interface ChatStreamParams {
     data: string; // Base64 encoded file data
   }>;
   selectedComponent: ComponentSelection | null;
+  webSearchAllowed?: boolean;
 }
 
 export interface ChatResponseEnd {

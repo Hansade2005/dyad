@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
@@ -9,8 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {} from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { showError } from "@/lib/toast";
 import { UserSettings } from "@/lib/schemas";
 
 import { ProviderSettingsHeader } from "./ProviderSettingsHeader";
@@ -77,6 +76,7 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
 
   const isConfigured = isValidUserKey || hasEnvKey; // Configured if either is set
 
+
   // --- Save Handler ---
   const handleSaveKey = async () => {
     if (!apiKeyInput) {
@@ -97,15 +97,11 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
           },
         },
       };
-      if (isDyad) {
-        settingsUpdate.enableDyadPro = true;
-      }
       await updateSettings(settingsUpdate);
       setApiKeyInput(""); // Clear input on success
       // Optionally show a success message
     } catch (error: any) {
-      console.error("Error saving API key:", error);
-      setSaveError(error.message || "Failed to save API key.");
+      setSaveError(error.message || 'Failed to save API key.');
     } finally {
       setIsSaving(false);
     }
@@ -116,33 +112,21 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
     setIsSaving(true);
     setSaveError(null);
     try {
-      await updateSettings({
+      const settingsUpdate: Partial<UserSettings> = {
         providerSettings: {
           ...settings?.providerSettings,
           [provider]: {
             ...settings?.providerSettings?.[provider],
-            apiKey: undefined,
+            apiKey: {
+              value: "",
+            },
           },
         },
-      });
-      // Optionally show a success message
+      };
+      await updateSettings(settingsUpdate);
+      setApiKeyInput("");
     } catch (error: any) {
-      console.error("Error deleting API key:", error);
-      setSaveError(error.message || "Failed to delete API key.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // --- Toggle Dyad Pro Handler ---
-  const handleToggleDyadPro = async (enabled: boolean) => {
-    setIsSaving(true);
-    try {
-      await updateSettings({
-        enableDyadPro: enabled,
-      });
-    } catch (error: any) {
-      showError(`Error toggling Dyad Pro: ${error}`);
+      setSaveError(error.message || 'Failed to delete API key.');
     } finally {
       setIsSaving(false);
     }
@@ -270,21 +254,7 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
           />
         )}
 
-        {isDyad && !settingsLoading && (
-          <div className="mt-6 flex items-center justify-between p-4 bg-(--background-lightest) rounded-lg border">
-            <div>
-              <h3 className="font-medium">Enable Trio Pro</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Toggle to enable Trio Pro
-              </p>
-            </div>
-            <Switch
-              checked={settings?.enableDyadPro}
-              onCheckedChange={handleToggleDyadPro}
-              disabled={isSaving}
-            />
-          </div>
-        )}
+        {/* Dyad Pro toggle removed. Only Smart Context is available as an advanced toggle. */}
 
         {/* Conditionally render CustomModelsSection */}
         {supportsCustomModels && providerData && (

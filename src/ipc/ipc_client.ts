@@ -259,6 +259,7 @@ export class IpcClient {
       chatId: number;
       redo?: boolean;
       attachments?: File[];
+      webSearchAllowed?: boolean;
       onUpdate: (messages: Message[]) => void;
       onEnd: (response: ChatResponseEnd) => void;
       onError: (error: string) => void;
@@ -270,6 +271,7 @@ export class IpcClient {
       redo,
       attachments,
       selectedComponent,
+      webSearchAllowed,
       onUpdate,
       onEnd,
       onError,
@@ -307,6 +309,7 @@ export class IpcClient {
               redo,
               selectedComponent,
               attachments: fileDataArray,
+              webSearchAllowed,
             })
             .catch((err) => {
               showError(err);
@@ -327,6 +330,7 @@ export class IpcClient {
           chatId,
           redo,
           selectedComponent,
+          webSearchAllowed,
         })
         .catch((err) => {
           showError(err);
