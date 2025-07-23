@@ -30,6 +30,7 @@ const isEndToEndTestBuild = process.env.E2E_TEST_BUILD === "true";
 
 const config: ForgeConfig = {
   packagerConfig: {
+    executableName: "trio",
     protocols: [
       {
         name: "Trio",
