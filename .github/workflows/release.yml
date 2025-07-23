@@ -26,10 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Extract version from package.json
+      - name: Extract version (hardcoded)
         id: version
-        run: echo "package_version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
-        shell: bash
+        run: echo "package_version=0.0.1" >> $GITHUB_OUTPUT
 
       - name: Build Windows installer
         run: npm run make
@@ -57,10 +56,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Extract version from package.json
+      - name: Extract version (hardcoded)
         id: version
-        run: echo "package_version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
-        shell: bash
+        run: echo "package_version=0.0.1" >> $GITHUB_OUTPUT
 
       - name: Build Linux AppImage
         run: npm run make
