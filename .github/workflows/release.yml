@@ -61,7 +61,7 @@ jobs:
         id: find_linux_output
         if: contains(matrix.os.name, 'linux')
         run: |
-          output_dir="out/trio-linux-x64"
+          output_dir="out/Trio-linux-x64"
           if [ ! -d "$output_dir" ]; then
               echo "Expected Linux build output directory '$output_dir' not found."
               if [ -d "out" ]; then
