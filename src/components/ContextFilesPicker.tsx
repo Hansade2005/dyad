@@ -116,11 +116,11 @@ export function ContextFilesPicker() {
                   <TooltipContent className="max-w-[300px]">
                     {isSmartContextEnabled ? (
                       <p>
-                        With Smart Context, Dyad uses the most relevant files as
+                        With Smart Context, Trio uses the most relevant files as
                         context.
                       </p>
                     ) : (
-                      <p>By default, Dyad uses your whole codebase.</p>
+                      <p>By default, Trio uses smart context.</p>
                     )}
                   </TooltipContent>
                 </Tooltip>
