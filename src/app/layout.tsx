@@ -14,7 +14,7 @@ export default function RootLayout({
     <>
       <ThemeProvider>
         <DeepLinkProvider>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <TitleBar />
             <AppSidebar />
             <div className="flex h-screenish w-full overflow-x-hidden mt-12 mb-4 mr-4 border-t border-l border-border rounded-lg bg-background">
