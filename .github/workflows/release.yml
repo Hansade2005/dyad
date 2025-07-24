@@ -74,6 +74,40 @@ jobs:
           ls -R "$output_dir"
           echo "artifact_path=$output_dir" >> "$GITHUB_OUTPUT"
         shell: bash
+
+      # Debug: List node_modules and check for better-sqlite3 after build
+      - name: List node_modules in build output (Linux)
+        if: contains(matrix.os.name, 'linux')
+        run: |
+          if [ -d "out/Trio-linux-x64/resources/app/node_modules" ]; then
+            echo "node_modules exists in out/Trio-linux-x64/resources/app/"
+            ls -l out/Trio-linux-x64/resources/app/node_modules
+            if [ -d "out/Trio-linux-x64/resources/app/node_modules/better-sqlite3" ]; then
+              echo "better-sqlite3 is present in node_modules."
+              ls -l out/Trio-linux-x64/resources/app/node_modules/better-sqlite3
+            else
+              echo "better-sqlite3 NOT found in node_modules!"
+            fi
+          else
+            echo "node_modules directory NOT found in out/Trio-linux-x64/resources/app/"
+          fi
+      - name: List node_modules in build output (Windows)
+        if: contains(matrix.os.name, 'windows')
+        run: |
+          if (Test-Path "out/trio-win32-x64/resources/app/node_modules") {
+            Write-Host "node_modules exists in out/trio-win32-x64/resources/app/"
+            Get-ChildItem -Path "out/trio-win32-x64/resources/app/node_modules" | Format-Table Name, Mode, Length
+            if (Test-Path "out/trio-win32-x64/resources/app/node_modules/better-sqlite3") {
+              Write-Host "better-sqlite3 is present in node_modules."
+              Get-ChildItem -Path "out/trio-win32-x64/resources/app/node_modules/better-sqlite3" | Format-Table Name, Mode, Length
+            } else {
+              Write-Host "better-sqlite3 NOT found in node_modules!"
+            }
+          } else {
+            Write-Host "node_modules directory NOT found in out/trio-win32-x64/resources/app/"
+          }
+        shell: powershell
+
       - name: Upload Windows App Artifact
         if: contains(matrix.os.name, 'windows')
         uses: actions/upload-artifact@v4
