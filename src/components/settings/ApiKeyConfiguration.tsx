@@ -63,6 +63,15 @@ export function ApiKeyConfiguration({
 
   const defaultAccordionValue = [];
   if (isValidUserKey || !hasEnvKey) {
+  // Hide all API key UI for Trio AI
+  if (provider === "trio") {
+    return (
+      <div className="border rounded-lg px-4 py-6 bg-(--background-lightest) text-center">
+        <p className="text-lg font-medium mb-2">Trio AI is ready to use.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">No API key required.</p>
+      </div>
+    );
+  }
     defaultAccordionValue.push("settings-key");
   }
   if (!isDyad && hasEnvKey) {

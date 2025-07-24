@@ -38,8 +38,9 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
 
   // Find the specific provider data from the fetched list
   const providerData = allProviders?.find((p) => p.id === provider);
+  // Only show ModelsSection for non-trio providers
   const supportsCustomModels =
-    providerData?.type === "custom" || providerData?.type === "cloud";
+    provider !== "trio" && (providerData?.type === "custom" || providerData?.type === "cloud");
 
 
   const isTrio = provider === "trio";
@@ -56,8 +57,9 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
     : isDyad
     ? "Dyad"
     : (providerData?.name ?? "Unknown Provider");
+  // For Trio, do not show Codestral/Mistral or any model details
   const providerWebsiteUrl = isTrio
-    ? "https://codestral.mistral.ai/"
+    ? undefined
     : isDyad
     ? "https://academy.dyad.sh/settings"
     : providerData?.websiteUrl;
@@ -256,8 +258,8 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
 
         {/* Dyad Pro toggle removed. Only Smart Context is available as an advanced toggle. */}
 
-        {/* Conditionally render CustomModelsSection */}
-        {supportsCustomModels && providerData && (
+        {/* Hide ModelsSection for Trio AI provider */}
+        {supportsCustomModels && providerData && provider !== "trio" && (
           <ModelsSection providerId={providerData.id} />
         )}
         <div className="h-24"></div>

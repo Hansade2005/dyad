@@ -37,6 +37,9 @@ export function HelpDialog({ isOpen, onClose }: HelpDialogProps) {
   const [sessionId, setSessionId] = useState("");
   const selectedChatId = useAtomValue(selectedChatIdAtom);
 
+  // For GitHub API
+  const GITHUB_API_URL = "https://api.github.com/repos/Hansade2005/dyad/issues";
+
   // Function to reset all dialog state
   const resetDialogState = () => {
     setIsLoading(false);
@@ -47,66 +50,90 @@ export function HelpDialog({ isOpen, onClose }: HelpDialogProps) {
     setSessionId("");
   };
 
-  // Reset state when dialog closes or reopens
+  // Reset state when dialog opens or closes
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
       resetDialogState();
     }
   }, [isOpen]);
 
-  // Wrap the original onClose to also reset state
+  // Helper to create a GitHub issue via API
+  async function createGithubIssue({ title, body }: { title: string; body: string }) {
+    try {
+      const response = await fetch(GITHUB_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // If you need a GitHub token for higher rate limits, uncomment and provide it:
+          // Authorization: `token YOUR_GITHUB_TOKEN`,
+        },
+        body: JSON.stringify({
+          title,
+          body,
+          labels: ["bug", "filed-from-app"],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error creating GitHub issue:", error);
+      showError("Failed to create GitHub issue. Please try again or create manually.");
+      throw error; // Re-throw to be caught by the calling function
+    }
+  }
+
   const handleClose = () => {
+    resetDialogState();
     onClose();
+  };
+
+  const handleCancelReview = () => {
+    setReviewMode(false);
+    setChatLogsData(null);
   };
 
   const handleReportBug = async () => {
     setIsLoading(true);
     try {
-      // Get system debug info
       const debugInfo = await IpcClient.getInstance().getSystemDebugInfo();
-
-      // Create a formatted issue body with the debug info
       const issueBody = `
-## Bug Description
-<!-- Please describe the issue you're experiencing -->
+## Bug Report from Trio AI App
 
-## Steps to Reproduce
-<!-- Please list the steps to reproduce the issue -->
+**Trio App Version:** ${debugInfo.dyadVersion}
+**Platform:** ${debugInfo.platform}
+**Architecture:** ${debugInfo.architecture}
+**Node Version:** ${debugInfo.nodeVersion || "Not available"}
 
-## Expected Behavior
-<!-- What did you expect to happen? -->
+---
 
-## Actual Behavior
-<!-- What actually happened? -->
+### Description
+### Steps to Reproduce
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
-## System Information
-- Dyad Version: ${debugInfo.dyadVersion}
-- Platform: ${debugInfo.platform}
-- Architecture: ${debugInfo.architecture}
-- Node Version: ${debugInfo.nodeVersion || "n/a"}
-- PNPM Version: ${debugInfo.pnpmVersion || "n/a"}
-- Node Path: ${debugInfo.nodePath || "n/a"}
-- Telemetry ID: ${debugInfo.telemetryId || "n/a"}
-- Model: ${debugInfo.selectedLanguageModel || "n/a"}
-
-## Logs
+### Expected Behavior
+### Actual Behavior
+### Logs
 \`\`\`
-${debugInfo.logs.slice(-3_500) || "No logs available"}
+${debugInfo.logs}
 \`\`\`
 `;
 
-      // Create the GitHub issue URL with the pre-filled body
-      const encodedBody = encodeURIComponent(issueBody);
-      const encodedTitle = encodeURIComponent("[bug] <add title>");
-      const githubIssueUrl = `https://github.com/dyad-sh/dyad/issues/new?title=${encodedTitle}&labels=bug,filed-from-app&body=${encodedBody}`;
-
-      // Open the pre-filled GitHub issue page
-      IpcClient.getInstance().openExternalUrl(githubIssueUrl);
+      const issue = await createGithubIssue({
+        title: "[bug] <add concise bug title here>",
+        body: issueBody,
+      });
+      window.open(issue.html_url, "_blank");
     } catch (error) {
       console.error("Failed to prepare bug report:", error);
-      // Fallback to opening the regular GitHub issue page
+      showError("Failed to create bug report. Opening general GitHub issue page.");
       IpcClient.getInstance().openExternalUrl(
-        "https://github.com/dyad-sh/dyad/issues/new",
+        "https://github.com/Hansade2005/dyad/issues/new",
       );
     } finally {
       setIsLoading(false);
@@ -115,106 +142,87 @@ ${debugInfo.logs.slice(-3_500) || "No logs available"}
 
   const handleUploadChatSession = async () => {
     if (!selectedChatId) {
-      alert("Please select a chat first");
+      showError("No chat selected to upload.");
       return;
     }
-
     setIsUploading(true);
     try {
-      // Get chat logs (includes debug info, chat data, and codebase)
-      const chatLogs =
-        await IpcClient.getInstance().getChatLogs(selectedChatId);
-
-      // Store data for review and switch to review mode
+      const chatLogs = await IpcClient.getInstance().getChatLogs(selectedChatId);
       setChatLogsData(chatLogs);
       setReviewMode(true);
     } catch (error) {
-      console.error("Failed to upload chat session:", error);
-      alert(
-        "Failed to upload chat session. Please try again or report manually.",
-      );
+      console.error("Failed to retrieve chat session for upload:", error);
+      showError("Failed to prepare chat session for upload. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleSubmitChatLogs = async () => {
-    if (!chatLogsData) return;
+    if (!chatLogsData) {
+      showError("No chat logs data to submit.");
+      return;
+    }
 
     setIsUploading(true);
     try {
-      // Prepare data for upload
-      const chatLogsJson = {
-        systemInfo: chatLogsData.debugInfo,
-        chat: chatLogsData.chat,
-        codebaseSnippet: chatLogsData.codebase,
-      };
+      const chatLogsMarkdown = `
+## Chat Session Logs
 
-      // Get signed URL
-      const response = await fetch(
-        "https://upload-logs.dyad.sh/generate-upload-url",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            extension: "json",
-            contentType: "application/json",
-          }),
-        },
-      );
+### System Information
+- Trio App Version: ${chatLogsData.debugInfo.dyadVersion}
+- Platform: ${chatLogsData.debugInfo.platform}
+- Architecture: ${chatLogsData.debugInfo.architecture}
+- Node Version: ${chatLogsData.debugInfo.nodeVersion || "Not available"}
 
-      if (!response.ok) {
-        showError(`Failed to get upload URL: ${response.statusText}`);
-        throw new Error(`Failed to get upload URL: ${response.statusText}`);
-      }
+### Chat Messages
+\`\`\`json
+${JSON.stringify(chatLogsData.chat.messages, null, 2)}
+\`\`\`
 
-      const { uploadUrl, filename } = await response.json();
+### Codebase Snippet
+\`\`\`
+${chatLogsData.codebase}
+\`\`\`
 
-      await IpcClient.getInstance().uploadToSignedUrl(
-        uploadUrl,
-        "application/json",
-        chatLogsJson,
-      );
+### Logs (System & App)
+\`\`\`
+${chatLogsData.debugInfo.logs}
+\`\`\`
+`;
 
-      // Extract session ID (filename without extension)
-      const sessionId = filename.replace(".json", "");
-      setSessionId(sessionId);
+      const issue = await createGithubIssue({
+        title: `[chat session upload] ${chatLogsData.chat.title || "Untitled Chat"} - ${new Date().toLocaleString()}`,
+        body: chatLogsMarkdown,
+      });
+
+      setSessionId(issue.number.toString());
       setUploadComplete(true);
       setReviewMode(false);
+      window.open(issue.html_url, "_blank");
     } catch (error) {
-      console.error("Failed to upload chat logs:", error);
-      alert("Failed to upload chat logs. Please try again.");
+      console.error("Failed to upload chat logs to GitHub:", error);
+      showError("Failed to upload chat logs. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleCancelReview = () => {
-    setReviewMode(false);
-    setChatLogsData(null);
-  };
-
   const handleOpenGitHubIssue = () => {
-    // Create a GitHub issue with the session ID
     const issueBody = `
 ## Support Request
-Session ID: ${sessionId}
+**Session ID:** ${sessionId}
+
+---
 
 ## Issue Description
-<!-- Please describe the issue you're experiencing -->
-
 ## Expected Behavior
-<!-- What did you expect to happen? -->
-
 ## Actual Behavior
-<!-- What actually happened? -->
 `;
 
     const encodedBody = encodeURIComponent(issueBody);
-    const encodedTitle = encodeURIComponent("[session report] <add title>");
-    const githubIssueUrl = `https://github.com/dyad-sh/dyad/issues/new?title=${encodedTitle}&labels=support&body=${encodedBody}`;
+    const encodedTitle = encodeURIComponent(`[session report] Issue for Session ID: ${sessionId}`);
+    const githubIssueUrl = `https://github.com/Hansade2005/dyad/issues/new?title=${encodedTitle}&labels=support&body=${encodedBody}`;
 
     IpcClient.getInstance().openExternalUrl(githubIssueUrl);
     handleClose();
@@ -240,8 +248,10 @@ Session ID: ${sessionId}
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(sessionId);
+                    showError("Session ID copied!"); // Consider a success toast
                   } catch (err) {
                     console.error("Failed to copy session ID:", err);
+                    showError("Failed to copy session ID.");
                   }
                 }}
               />
@@ -249,7 +259,7 @@ Session ID: ${sessionId}
             </div>
             <p className="text-center text-sm">
               Please open a GitHub issue so we can follow-up with you on this
-              issue.
+              issue. The session ID above is crucial for us to link your report to the uploaded data.
             </p>
           </div>
           <DialogFooter>
@@ -302,21 +312,21 @@ Session ID: ${sessionId}
             <div className="border rounded-md p-3">
               <h3 className="font-medium mb-2">Codebase Snapshot</h3>
               <div className="text-sm bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-y-auto font-mono">
-                {chatLogsData.codebase}
+                {chatLogsData.codebase || "No codebase snapshot available."}
               </div>
             </div>
 
             <div className="border rounded-md p-3">
               <h3 className="font-medium mb-2">Logs</h3>
               <div className="text-sm bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-40 overflow-y-auto font-mono">
-                {chatLogsData.debugInfo.logs}
+                {chatLogsData.debugInfo.logs || "No logs available."}
               </div>
             </div>
 
             <div className="border rounded-md p-3">
               <h3 className="font-medium mb-2">System Information</h3>
               <div className="text-sm bg-slate-50 dark:bg-slate-900 rounded p-2 max-h-32 overflow-y-auto">
-                <p>Dyad Version: {chatLogsData.debugInfo.dyadVersion}</p>
+                <p>Trio App Version: {chatLogsData.debugInfo.dyadVersion}</p>
                 <p>Platform: {chatLogsData.debugInfo.platform}</p>
                 <p>Architecture: {chatLogsData.debugInfo.architecture}</p>
                 <p>
@@ -358,7 +368,7 @@ Session ID: ${sessionId}
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Need help with Dyad?</DialogTitle>
+          <DialogTitle>Need help with Trio AI ?</DialogTitle>
         </DialogHeader>
         <DialogDescription className="">
           If you need help or want to report an issue, here are some options:
@@ -369,7 +379,7 @@ Session ID: ${sessionId}
               variant="outline"
               onClick={() => {
                 IpcClient.getInstance().openExternalUrl(
-                  "https://www.dyad.sh/docs",
+                  "https://optimaai.cc/trio/docs",
                 );
               }}
               className="w-full py-6 bg-(--background-lightest)"

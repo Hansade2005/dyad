@@ -22,6 +22,23 @@ interface ModelsSectionProps {
 }
 
 export function ModelsSection({ providerId }: ModelsSectionProps) {
+  // Custom description and no custom model button for Trio AI
+  if (providerId === "trio") {
+    return (
+      <div className="mt-8 border-t pt-6">
+        <h2 className="text-2xl font-semibold mb-4">Models</h2>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">Trio AI</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+            <b>Trio AI</b> is a very powerful model trained on <b>405 Billion parameters</b>, with <b>20 experts</b> and a large context window of <b>2 million tokens</b>.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No model selection or custom models are required. Trio AI is ready to use out of the box.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [isCustomModelDialogOpen, setIsCustomModelDialogOpen] = useState(false);
   const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
     useState(false);
@@ -145,7 +162,7 @@ export function ModelsSection({ providerId }: ModelsSectionProps) {
       )}
       {/* End Custom Models List Area */}
 
-      {providerId !== "auto" && (
+      {providerId !== "auto" && providerId !== "trio" && (
         <Button
           onClick={() => setIsCustomModelDialogOpen(true)}
           variant="outline"

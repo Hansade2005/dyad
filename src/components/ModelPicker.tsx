@@ -27,6 +27,18 @@ import { useSettings } from "@/hooks/useSettings";
 
 export function ModelPicker() {
   const { settings, updateSettings } = useSettings();
+  // If no selectedModel, set default to Trio AI
+  useEffect(() => {
+    if (settings && (!settings.selectedModel || !settings.selectedModel.provider)) {
+      updateSettings({
+        selectedModel: {
+          provider: "trio",
+          name: "codestral-2501",
+        },
+      });
+    }
+  }, [settings, updateSettings]);
+
   const onModelSelect = (model: LargeLanguageModel) => {
     updateSettings({ selectedModel: model });
   };

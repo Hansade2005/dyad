@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { NodeSystemInfo } from "@/ipc/ipc_types";
 import { usePostHog } from "posthog-js/react";
 import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { useSettings } from "@/hooks/useSettings";
 type NodeInstallStep =
   | "install"
   | "waiting-for-continue"
@@ -32,6 +33,7 @@ type NodeInstallStep =
   | "finished-checking";
 
 export function SetupBanner() {
+  const { settings } = useSettings();
   const posthog = usePostHog();
   const navigate = useNavigate();
   const { isAnyProviderSetup, isLoading: loading } =
@@ -94,7 +96,10 @@ export function SetupBanner() {
   if (!isNodeSetupComplete && nodeSystemInfo) {
     itemsNeedAction.push("node-setup");
   }
-  if (!isAnyProviderSetup() && !loading) {
+  // Only show AI setup if selected provider is not 'trio'
+  const selectedProvider = settings?.selectedModel?.provider;
+  const showAiSetup = !isAnyProviderSetup() && !loading && selectedProvider !== "trio";
+  if (showAiSetup) {
     itemsNeedAction.push("ai-setup");
   }
 
@@ -121,6 +126,12 @@ export function SetupBanner() {
         <p className="mt-4 text-lg text-gray-500 text-center">
           Create apps and websites by chatting with Trio AI
         </p>
+        {selectedProvider === "trio" && (
+          <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg text-green-800 dark:text-green-200 text-center">
+            <Sparkles className="inline-block mr-2 mb-1 text-green-500" />
+            <span>Trio AI is ready to use. No setup required.</span>
+          </div>
+        )}
       </div>
     );
   }
