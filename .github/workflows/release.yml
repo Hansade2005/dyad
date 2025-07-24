@@ -33,13 +33,13 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - name: Publish app
+      - name: Build distributables (make)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-        run: npm run publish
+        run: npm run make
       - name: Find Build Output Path (Windows)
         id: find_windows_output
         if: contains(matrix.os.name, 'windows')
