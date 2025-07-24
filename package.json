@@ -38,7 +38,6 @@
     "extract-codebase": "ts-node scripts/extract-codebase.ts",
     "prepare": "husky install",
     "pre:e2e": "cross-env E2E_TEST_BUILD=true npm run package",
-    "postinstall": "electron-forge make && npx electron-rebuild",
     "e2e": "playwright test"
   },
   "keywords": [],
