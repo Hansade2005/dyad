@@ -115,7 +115,7 @@
     "@vercel/sdk": "^1.10.0",
     "@vitejs/plugin-react": "^4.3.4",
     "ai": "^4.3.4",
-    "better-sqlite3": "^11.9.1",
+    "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
