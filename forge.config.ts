@@ -33,7 +33,7 @@ const config: ForgeConfig = {
     executableName: "trio",
     protocols: [
       {
-        name: "Trio",
+        name: "trio",
         schemes: ["trio"], // You can handle this with app.setAsDefaultProtocolClient("trio") in your Electron main
       },
     ],
