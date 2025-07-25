@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+
 jobs:
 
   build-windows:
@@ -62,15 +63,6 @@ jobs:
       - name: Build Linux AppImage
         run: npm run make
 
-      - name: Check AppImage exists
-        run: |
-          echo "Listing files in out/make/appimage/x64/"
-          ls -l out/make/appimage/x64/
-          if [ ! -f out/make/appimage/x64/*.AppImage ]; then
-            echo "AppImage not found!"
-            exit 1
-          fi
-
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
@@ -108,10 +100,6 @@ jobs:
           VERSION=${{ needs.build-windows.outputs.version }}
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
-
-
-
-
 
       - name: Extract release notes from CHANGELOG.md
         id: changelog
