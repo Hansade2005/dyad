@@ -154,16 +154,52 @@ export default function HomePage() {
       <div className="flex flex-col items-center justify-center max-w-3xl m-auto p-8">
         <div className="w-full flex flex-col items-center">
           {/* Loading Spinner */}
-          <div className="relative w-24 h-24 mb-8">
-            <div className="absolute top-0 left-0 w-full h-full border-8 border-gray-200 dark:border-gray-700 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-full h-full border-8 border-t-primary rounded-full animate-spin"></div>
-          </div>
+            <div className="relative w-24 h-24 mb-8 flex items-center justify-center">
+            {/* Outer static ring */}
+            <div className="absolute inset-0 w-full h-full border-8 border-gray-200 dark:border-gray-700 rounded-full"></div>
+            {/* Animated spinner arc */}
+            <svg
+              className="absolute inset-0 w-full h-full animate-spin"
+              viewBox="0 0 100 100"
+            >
+              <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="url(#spinner-gradient)"
+              strokeWidth="8"
+              strokeDasharray="66 100"
+              strokeLinecap="round"
+              />
+              <defs>
+              <linearGradient id="spinner-gradient" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stopColor="#ec4899" />
+                <stop offset="50%" stopColor="#ef4444" />
+                <stop offset="100%" stopColor="#f59e42" />
+              </linearGradient>
+              </defs>
+            </svg>
+            {/* Center icon for extra feedback */}
+            <span className="absolute text-4xl text-primary opacity-80">
+              🚀
+            </span>
+            </div>
           <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-200">
-            Building your app
+           Trio is  Building your app
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-center max-w-md mb-8">
-            We're setting up your app with AI magic. <br />
-            This might take a moment...
+            Trio is add some AI magic. <br />
+            This might take a moment... <br />
+             <i>
+             Trio : You will{" "}
+             <span className="bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text text-transparent">
+               ❤️
+             </span>{" "}
+             it trust me.
+             </i>
+
+        
           </p>
         </div>
       </div>

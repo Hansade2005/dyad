@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { type VariantProps, cva } from "class-variance-authority";
-import { Menu } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,7 +245,7 @@ function SidebarTrigger({
           }}
           {...props}
         >
-          <Menu className="size-5" />
+          <PanelLeft className="size-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </TooltipTrigger>

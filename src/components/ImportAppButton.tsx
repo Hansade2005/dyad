@@ -15,7 +15,7 @@ export function ImportAppButton() {
           onClick={() => setIsDialogOpen(true)}
         >
           <Upload className="mr-2 h-4 w-4" />
-          Import App
+          Import project
         </Button>
       </div>
       <ImportAppDialog
