@@ -1,141 +1,320 @@
 name: Release app
 
-
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version (e.g., v1.0.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
+
 jobs:
-
-  build-windows:
-    name: Build Windows Installer
-    runs-on: windows-latest
-    outputs:
-      version: ${{ steps.version.outputs.package_version }}
+  build:
+    # environment: release
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        os:
+          - { name: "windows", image: "windows-latest" }
+          - { name: "linux", image: "ubuntu-22.04" }
+    runs-on: ${{ matrix.os.image }}
     steps:
-      - name: Checkout repo
+      - name: Github checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
+      - name: Install Linux packaging dependencies
+        if: contains(matrix.os.name, 'linux')
+        run: sudo apt-get update && sudo apt-get install -y fakeroot dpkg rpm  
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: npm ci
+      - name: Publish app (all platforms)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+        run: npm run publish
+      - name: Find Build Output Path (Windows)
+        id: find_windows_output
+        if: contains(matrix.os.name, 'windows')
+        run: |
+          $outputDir = "out/trio-win32-x64"
+          if (-Not (Test-Path $outputDir)) {
+              Write-Error "Expected Windows build output directory '$outputDir' not found."
+              if (Test-Path "out") {
+                  Write-Host "Contents of 'out' directory:"
+                  Get-ChildItem -Path "out" -Recurse | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
+              }
+              exit 1
+          }
+          Write-Host "Detected Windows output directory: $outputDir"
+          Get-ChildItem -Path $outputDir -Recurse | Select-Object FullName, Length, LastWriteTime | Format-Table -AutoSize
+          echo "artifact_path=$outputDir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+        shell: powershell
+      - name: Find Build Output Path (Linux)
+        id: find_linux_output
+        if: contains(matrix.os.name, 'linux')
+        run: |
+          output_dir="out/Trio-linux-x64"
+          if [ ! -d "$output_dir" ]; then
+              echo "Expected Linux build output directory '$output_dir' not found."
+              if [ -d "out" ]; then
+                  echo "Contents of 'out' directory:"
+                  ls -R "out"
+              fi
+              exit 1
+          fi
+          echo "Detected Linux output directory: $output_dir"
+          ls -R "$output_dir"
+          echo "artifact_path=$output_dir" >> "$GITHUB_OUTPUT"
+        shell: bash
 
-      - name: Install dependencies
-        run: npm ci
 
-      - name: Extract version (hardcoded)
-        id: version
-        run: echo "package_version=0.0.1" >> $GITHUB_OUTPUT
-
-      - name: Build Windows installer
-        run: npm run make
-
-      - name: Upload Windows Installer
+      - name: Upload Windows App Artifact
+        if: contains(matrix.os.name, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          path: ${{ steps.find_windows_output.outputs.artifact_path }}/*
+          retention-days: 7
+      - name: Upload Linux App Artifact
+        if: contains(matrix.os.name, 'linux')
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-app
+          path: ${{ steps.find_linux_output.outputs.artifact_path }}/*
+          retention-days: 7
+      - name: Upload Linux DEB Installer Artifact
+        if: contains(matrix.os.name, 'linux')
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb-installer
+          path: out/make/deb/x64/*.deb
+          retention-days: 7
+      - name: Upload Windows Installer Artifact
+        if: contains(matrix.os.name, 'windows')
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: out/make/squirrel.windows/x64/*.exe
-
-  build-linux:
-    name: Build Linux AppImage
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.package_version }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Extract version (hardcoded)
-        id: version
-        run: echo "package_version=0.0.1" >> $GITHUB_OUTPUT
-
-      - name: Build Linux AppImage
-        run: npm run make
-
-      - name: Check AppImage exists
-        run: |
-          echo "Listing files in out/make/appimage/x64/"
-          ls -l out/make/appimage/x64/
-          if [ ! -f out/make/appimage/x64/*.AppImage ]; then
-            echo "AppImage not found!"
-            exit 1
-          fi
-
-      - name: Upload Linux AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-app
-          path: out/make/appimage/x64/*.AppImage
-
+          retention-days: 7
 
   release:
     name: Create GitHub Release
+    needs: build
     runs-on: ubuntu-latest
-    needs: [build-windows, build-linux]
+    permissions:
+      contents: write
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Download Windows Installer
+      - name: Download all built artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows-installer
-          path: artifacts/windows-installer
-
-      - name: Download Linux AppImage
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-app
-          path: artifacts/linux-app
-
-      - name: Set up Git user
+          path: artifacts
+      - name: Unzip Windows Installer
+        if: always()
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-      - name: Commit and tag version
-        run: |
-          VERSION=${{ needs.build-windows.outputs.version }}
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
-
-
-
-
-
-      - name: Extract release notes from CHANGELOG.md
-        id: changelog
-        run: |
-          VERSION=${{ needs.build-windows.outputs.version }}
-          echo "Extracting changelog for version $VERSION..."
-          
-          NOTES=$(awk "/^##?\\s*\\[?$VERSION\\]?\\s*$/,/^##?\\s+/" CHANGELOG.md | sed '1d;$d')
-          if [ -z "$NOTES" ]; then
-            NOTES="⚠️ No matching release notes found for version $VERSION in CHANGELOG.md."
+          if [ -f artifacts/windows-installer.zip ]; then
+            unzip -o artifacts/windows-installer.zip -d artifacts/windows-installer
           fi
-
-          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.build-windows.outputs.version }}
-          name: Release v${{ needs.build-windows.outputs.version }}
-          body: ${{ steps.changelog.outputs.release_notes }}
-          files: |
-            artifacts/windows-installer/*.exe
-            artifacts/linux-app/*.AppImage
+      - name: Unzip Linux DEB Installer
+        if: always()
+        run: |
+          if [ -f artifacts/linux-deb-installer.zip ]; then
+            unzip -o artifacts/linux-deb-installer.zip -d artifacts/linux-deb-installer
+          fi
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          body: |
+            ## 🚀 Trio ${{ github.event.inputs.version }} – The Next Generation AI App Builder
+            
+            **Author:** Hans Ade
+            
+            ---
+            
+            ### 🌟 Introducing Trio
+            
+            Trio is a revolutionary AI-powered app builder that puts you in full control. Unlike cloud-based competitors, Trio runs **locally on your machine**—delivering unmatched speed, privacy, and flexibility. Whether you’re a developer, designer, or entrepreneur, Trio empowers you to create, iterate, and launch apps and websites by simply chatting with AI.
+            
+            ---
+            
+            ### ✨ Why Choose Trio Over Lovable.dev, Bolt.new, and v0.dev?
+            
+            - **Truly Local & Private:**  
+              Your ideas, code, and data never leave your device. No vendor lock-in, no cloud dependency, and no privacy trade-offs. Trio is built for creators who value control and confidentiality.
+            
+            - **Bring Your Own AI Keys:**  
+              Use your own API keys for OpenAI, Anthropic, Google Gemini, Mistral, Groq, and more. You’re never locked into a single provider or forced to pay platform markups.
+            
+            - **Cross-Platform Freedom:**  
+              Trio runs natively on Windows and Mac (Linux support coming soon). No sign-up, no friction—just download and start building.
+            
+            - **Open Source & Extensible:**  
+              Trio is Apache 2.0-licensed and welcomes community contributions. You can inspect, extend, and trust every line of code.
+            
+            - **No Gimmicks, No Waiting:**  
+              Unlike cloud tools that throttle, queue, or restrict your builds, Trio gives you instant, unlimited access to all features—forever.
+            
+            ---
+            
+            ### 🏆 Feature Highlights
+            
+            #### 1. **Conversational App Building**
+            - Build full-stack apps, landing pages, dashboards, and more by chatting with AI.
+            - Real-time code generation, editing, and live preview—see changes as you chat.
+            - Supports web, mobile, backend, and desktop app creation.
+            
+            #### 2. **Modern Tech Stack, Zero Lock-In**
+            - Out-of-the-box support for React, Next.js, TypeScript, Tailwind CSS, shadcn/ui, and more.
+            - Easily add, remove, or swap frameworks and libraries.
+            - All code is yours—export, modify, and deploy anywhere.
+            
+            #### 3. **AI Model Agnostic**
+            - Connect to OpenAI, Anthropic, Google Gemini, Mistral, Groq, and local models (Ollama, LM Studio).
+            - Switch providers on the fly for cost, speed, or privacy.
+            
+            #### 4. **Instant App Import & Export**
+            - Import existing projects and instantly add AI-powered editing.
+            - Export your codebase at any time—no proprietary formats.
+            
+            #### 5. **Powerful Version Control**
+            - Built-in Git integration: initialize, commit, branch, and revert—all from the UI.
+            - Visualize changes and roll back with confidence.
+            
+            #### 6. **Secure by Design**
+            - All operations are sandboxed and run locally.
+            - No telemetry or analytics unless you opt in.
+            
+            #### 7. **Developer Experience First**
+            - Lightning-fast startup and build times.
+            - Beautiful, modern UI with dark/light themes.
+            - Toast notifications, keyboard shortcuts, and productivity boosters everywhere.
+            
+            #### 8. **Community & Support**
+            - Open roadmap, active GitHub, and a welcoming community.
+            - Direct support from the author, Hans Ade, and contributors.
+            
+            ---
+            
+            ### 💡 What Can You Build with Trio?
+            
+            - SaaS dashboards
+            - Landing pages
+            - AI chatbots
+            - Mobile apps
+            - Internal tools
+            - Data visualizations
+            - API backends
+            - ...and anything you can imagine!
+            
+            ---
+            
+            ### 🔥 The Trio Advantage
+            
+            - **Speed:** No cloud round-trips. Edits and previews are instant.
+            - **Privacy:** Your intellectual property stays on your device.
+            - **Ownership:** 100% open source. No hidden fees, no lock-in.
+            - **Flexibility:** Use any AI, any stack, any workflow.
+            - **Community:** Built by makers, for makers—with you in mind.
+            
+            ---
+            
+            ### 📦 Download & Get Started
+            
+            - **No sign-up required.**  
+            - **Just download, run, and create.**
+            
+            👉 [Download Trio for your platform](https://www.trio.sh/#download)
+            
+            ---
+            
+            ### 👨‍💻 About the Author
+            
+            Trio is crafted by **Hans Ade**—a passionate developer and builder who believes in empowering creators with tools that are fast, private, and truly yours.
+            
+            ---
+            
+            ### 📝 License
+            
+            Trio is open source under the Apache 2.0 License.
+            
+            ---
+            
+            ### 🙌 Join the Movement
+            
+            - [GitHub](https://github.com/Hansade2005/trio-sh)
+            - [Community & Support](https://www.trio.sh/community)
+            - [Contribute](./CONTRIBUTING.md)
+            
+            ---
+            
+            **Build something everyone will ❤️. Build it with Trio.**
+            
+            ---
+            
+            ## Downloads
+            See attached artifacts.
+          draft: false
+          prerelease: false
+          files: ""
+      - name: Delete existing Windows Installer asset
+        run: |
+          ASSET_PATTERN=".exe"
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest | jq '.id')
+          for asset in $(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets | jq -r ".[] | select(.name | endswith(\"${ASSET_PATTERN}\")) | .id"); do
+            curl -s -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -w "%{http_code}" -o /dev/null https://api.github.com/repos/${{ github.repository }}/releases/assets/${asset} | grep -qE '^(204|404)$' || true
+          done
+        continue-on-error: true
+      - name: Check if Windows Installer exists
+        id: check_windows_installer
+        run: |
+          if ls artifacts/windows-installer/**/*.exe 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Upload Windows Installer to Release
+        if: steps.check_windows_installer.outputs.exists == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          files: artifacts/windows-installer/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+      - name: Delete existing Linux DEB Installer asset
+        run: |
+          ASSET_PATTERN=".deb"
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest | jq '.id')
+          for asset in $(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets | jq -r ".[] | select(.name | endswith(\"${ASSET_PATTERN}\")) | .id"); do
+            curl -s -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -w "%{http_code}" -o /dev/null https://api.github.com/repos/${{ github.repository }}/releases/assets/${asset} | grep -qE '^(204|404)$' || true
+          done
+        continue-on-error: true
+      - name: Check if Linux DEB Installer exists
+        id: check_linux_deb
+        run: |
+          if ls artifacts/linux-deb-installer/**/*.deb 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Upload Linux DEB Installer to Release
+        if: steps.check_linux_deb.outputs.exists == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          files: artifacts/linux-deb-installer/**/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
